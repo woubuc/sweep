@@ -1,7 +1,15 @@
+/// Formats a given duration in seconds and outputs a human-readable string of
+/// how long ago the duration started.
+/// 
+/// Example:
+/// ```
+/// time_ago(75); // 1m 15s ago
+/// ```
 pub fn time_ago(seconds : u64) -> String {
     let mut seconds = seconds as f64;
 
     let days = (seconds / 86400.0).floor();
+    if days > 365.0 { return "More than a year ago".to_owned(); }
     if days > 31.0 { return "More than a month ago".to_owned(); }
     if days >= 1.0 { return format!("{}d ago", days); }
     
