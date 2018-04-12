@@ -1,0 +1,8 @@
+[package]
+name = "node-cleanup"
+version = "0.1.0"
+authors = ["Wouter <wou.buc@gmail.com>"]
+
+[dependencies]
+walkdir = "2.1.4"
+humansize = "1.1.0"
