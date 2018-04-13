@@ -1,20 +1,28 @@
-# Node Cleanup
-This little tool (written in Rust for performance and mostly educational
-reasons) will recursively browse a directory to find Node.js projects. If the
-project hasn't been touched for more than a month, it will remove the
-`node_modules` directory. In small to average projects, this can result in a
-40-60% reduction in disk space use.
+# Project Cleanup
+This little tool will recursively browse a directory to find code projects in
+several languages. If the project hasn't been touched for more than a month,
+it will remove directories containing libraries, dependencies, builds, etc.
 
-![Screenshot](README.png)
+The reasoning behind this is that these files can be retrieved or re-generated
+at any time, but if you haven't worked on the project for a month chances are
+you don't need them taking up space on your hard drive right now.
+
+![Screenshot](README.gif)
 
 I'm still learning Rust so this project is nowhere near 'complete', or even
-'decent'. The entire repository is a mess of test code blocks, attempts at
-structuring it, and a lot of trial-and-error learning. Ye be warned.
+'decent'. I have done and am doing my best to write good code, but a lot of it
+is still a work in progress.
 
 ## Install
 - Make sure you have installed Rust
-- Clone the repo and run the application with `cargo run -- [your path]`
-- Check the (very limited) options with `cargo run -- -help`
+- Clone the repo and build the application with `cargo build`
+
+## How it works
+Run the application with `project-cleanup --help` to see the options.
+
+## Supported languages
+- Node.js (will remove the `node_modules` directory)
+- Rust (will remove the `target` directory)
 
 ## License
 The application is published under the MIT license.
