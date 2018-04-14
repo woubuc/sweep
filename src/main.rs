@@ -1,128 +1,86 @@
 extern crate humansize;
+extern crate term_size;
 
 mod out;
-mod crawler;
-mod analyser;
 mod settings;
 mod languages;
 mod file_utils;
+mod find_paths;
+mod get_stats;
 
-use analyser::analyse;
+use languages::identify;
+use get_stats::format_size;
+
+//use analyser::analyse;
 use settings::Settings;
-
 use std::fs::remove_dir_all;
 use std::io::{stdin, stdout, Write};
-use humansize::{FileSize, file_size_opts as options};
 
 fn main() {
-	out::intro();
+	println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));
 
 	// Parse CLI settings
 	let settings = Settings::from_args(std::env::args());
 
-	// Find all code projects
-	let projects = crawler::crawl(settings.paths);
+	// Only hide the cursor after settings are loaded because if the help is
+	// displayed it will exit immediately
+	out::hide_cursor();
 
-	if projects.len() == 0 {
-		println!("No projects found");
-		return;
-	}
+	// Find the project paths
+	let paths = find_paths::find(settings.paths);
 
-	// Load project data & calculate directory sizes
-	if projects.len() == 1 { println!("Analysing 1 found project..."); }
-	else { println!("Analysing {} found projects...", projects.len()); }
+	// Get stats for the discovered projects
+	let stats = get_stats::get(paths);
 
-	let name_len = projects.iter().map(|p| p.name.len()).max().unwrap();
+	let mut remove = Vec::new();
+	let mut remove_size = 0;
+	for (path, stats) in stats {
+		if stats.modified > 2592000 || settings.all {
+			if let Some(lang) = identify(&path) {
+				remove_size += stats.size_deps;
 
-	let mut total_size_src = 0;
-	let mut total_size_deps = 0;
-	let mut total_size_deps_untouchable = 0;
-
-	let mut project_stats = Vec::new();
-	let mut to_remove = Vec::new();
-
-	for project in projects {
-		print!("   - {}{}   ", project.name, " ".repeat(name_len - project.name.len()));
-		let _ = stdout().flush();
-
-		let stats = analyse(project);
-		total_size_src += stats.size_src;
-
-		if stats.size_deps > 0 {
-			if stats.modified > 2592000 || settings.all {
-				total_size_deps += stats.size_deps;
-				for path in languages::get_paths(&stats.language) {
-					to_remove.push(stats.path.clone().join(path));
+				for lang_path in lang.get_paths() {
+					let p = path.join(lang_path);
+					if p.exists() { remove.push(p); }
 				}
-			} else {
-				total_size_deps_untouchable += stats.size_deps;
 			}
-
-			project_stats.push(stats);
 		}
-
-		println!("OK");
 	}
 
-	if to_remove.len() == 0 {
+	if remove.len() == 0 {
 		println!("No projects have directories that can be removed");
-		println!("   This is likely because your projects were recently modified");
-		println!("   Run the application with the --all flag to disregard file age");
-		println!("   See --help for all flags");
+		println!("  This is likely because your projects were recently modified");
+		println!("  Run the application with `--all` to disregard file age");
+		println!("  See --help for more options");
+		out::show_cursor();
 		return;
 	}
 
-	// Show stats
-	println!("About to clear {} out of the total {} across found projects",
-		format_size(total_size_deps),
-		format_size(total_size_src + total_size_deps + total_size_deps_untouchable));
-
-	if total_size_deps_untouchable > 0 {
-		println!("   Cannot remove {} because associated projects were used recently",
-			format_size(total_size_deps_untouchable));
+	println!("Ready to remove {} of unnecessary files", format_size(remove_size));
+	println!("Directories that will be removed:");
+	for path in &remove {
+		println!("  - {}", path.display());
 	}
+	println!("ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED.");
+	print!("Do you want to continue? (y/n) ");
 
-	// Ask the user to confirm before deleting
-	if settings.force == false {
-		if to_remove.len() == 1 { print!("Directory"); }
-		else { print!("Directories"); }
-		println!(" that will be removed:");
+	out::show_cursor();
+	let _ = stdout().flush();
 
-		for path in &to_remove {
-			println!("   - {}", path.display());
-		}
+	let mut input = String::new();
+	stdin().read_line(&mut input).unwrap();
+	if !input.starts_with("y") { return; }
 
-		print!("   Permanently delete ");
-		if to_remove.len() == 1 { print!("this directory?"); }
-		else { print!("these {} directories?", to_remove.len()); }
-		print!(" (y/n) ");
+	out::hide_cursor();
+	println!("Deleting directories...");
 
-		let _ = stdout().flush();
-
-		let mut input = String::new();
-		stdin().read_line(&mut input).unwrap();
-		if !input.contains("y") { return; }
-	}
-
-	println!("Removing directories...");
-
-	let dir_len = to_remove.iter().map(|d| d.to_str().unwrap().len()).max().unwrap();
-
-	for dir in to_remove {
-		print!("   - {}{}   ", dir.display(), " ".repeat(dir_len - dir.to_str().unwrap().len()));
-		let _ = stdout().flush();
-
-		if let Err(err) = remove_dir_all(dir) {
+	for path in remove {
+		println!("  {}", path.display());
+		if let Err(err) = remove_dir_all(path) {
 			println!("ERR");
 			println!("{}", err);
-		} else {
-			println!("OK");
 		}
 	}
 
 	println!("Done");
-}
-
-fn format_size(size : u64) -> String {
-	return size.file_size(options::CONVENTIONAL).unwrap();
 }

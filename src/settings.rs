@@ -1,13 +1,29 @@
-//! The Settings struct parses and holds all options that can be configured
-//! by the user through cli flags.
-
-use out;
-
 use std::env;
-use std::path::{Path, PathBuf};
 use std::process::exit;
+use std::path::{Path, PathBuf};
 
-/// Contains the application settings
+/// The documentation text displayed when using the --help flag
+const HELP : &str = "
+This utility cleans up build & dependency directories in old projects to
+preserve disk space
+
+USAGE:
+    node-cleanup [FLAGS] <PATH>...
+
+ARGS:
+    PATH   One or more directories where the utility should start searching
+           If omitted, will use the current working directory
+
+FLAGS:
+    -a, --all     Remove directories even in recently used projects
+    -f, --force   Skip confirmation before removing directories
+
+    -h, --help    Shows this help
+
+More info: github.com/woubuc/node-cleanup
+Questions, bugs & other issues: github.com/woubuc/node-cleanup/issues";
+
+/// Contains the user-configurable settings for the application
 pub struct Settings {
     /// The paths to search
     pub paths : Vec<PathBuf>,
@@ -16,10 +32,7 @@ pub struct Settings {
 	pub all : bool,
 
     /// If true, skip confirmation before removal
-    pub force : bool,
-
-    /// Enables or disables debug logging
-    pub debug : bool
+    pub force : bool
 }
 
 impl Settings {
@@ -28,8 +41,7 @@ impl Settings {
         Settings {
             paths: Vec::new(),
 			all: false,
-            force: false,
-            debug: false
+            force: false
         }
     }
 
@@ -51,12 +63,11 @@ impl Settings {
             // If the help flag is given, immediately show the help info and
             // then exit the application
             if match_flag(&flag, "-h", "-help") {
-                out::help();
+                println!("{}", HELP);
                 exit(0);
             }
 
             // If boolean flags are given, enable the corresponding setting
-            if match_flag(&flag, "-d", "-debug") { settings.debug = true; }
             else if match_flag(&flag, "-a", "-all") { settings.all = true; }
             else if match_flag(&flag, "-f", "-force") { settings.force = true; }
 
@@ -67,16 +78,8 @@ impl Settings {
             }
         }
 
-        // If debug mode is enabled, log the parsed settings
-        if settings.debug {
-            println!("Debug mode enabled");
-			if settings.all { println!("    All flag enabled")}
-            if settings.force { println!("    Force flag enabled"); }
-        }
-
         // If no paths were given, use the current working directory as root
         if settings.paths.len() < 1 {
-            if settings.debug { println!("    No paths given, using cwd"); }
             let cwd = env::current_dir().expect("Could not get working directory");
             settings.paths.push(cwd);
         }
@@ -92,11 +95,6 @@ impl Settings {
 /// * `flag`    - The flag
 /// * `compact` - Compact flag notation
 /// * `full`    - Full flag notation
-///
-/// # Example
-/// ```
-/// let should_help = match_flag(&flag, "-h", "-help");
-/// ```
 fn match_flag(flag : &str, compact : &str, full : &str) -> bool {
     flag.eq(compact) || flag.contains(full)
 }
@@ -105,11 +103,6 @@ fn match_flag(flag : &str, compact : &str, full : &str) -> bool {
 ///
 /// # Arguments
 /// * `flag` - The flag to parse
-///
-/// # Example
-/// ```
-/// let path = parse_path("/root");
-/// ```
 ///
 /// # Returns
 /// The absolute PathBuf if a valid path was given, or None
