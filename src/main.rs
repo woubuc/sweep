@@ -16,14 +16,11 @@ use get_stats::format_size;
 use std::io::{stdin, stdout, Write};
 
 fn main() {
+	out::hide_cursor();
 	println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));
 
 	// Parse CLI settings
 	let settings = Settings::from_args(std::env::args());
-
-	// Only hide the cursor after settings are loaded because if the help is
-	// displayed it will exit immediately
-	out::hide_cursor();
 
 	// Find the project paths
 	let paths = find_paths::find(settings.paths);

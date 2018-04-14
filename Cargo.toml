@@ -1,6 +1,6 @@
 [package]
 name = "project-cleanup"
-version = "0.3.0-indev"
+version = "0.3.0"
 authors = ["Wouter <wou.buc@gmail.com>"]
 
 [dependencies]
