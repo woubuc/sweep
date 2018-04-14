@@ -1,7 +1,5 @@
 extern crate humansize;
-extern crate term_size;
 
-mod out;
 mod settings;
 mod languages;
 mod file_utils;
@@ -16,7 +14,6 @@ use get_stats::format_size;
 use std::io::{stdin, stdout, Write};
 
 fn main() {
-	out::hide_cursor();
 	println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));
 
 	// Parse CLI settings
@@ -39,15 +36,11 @@ fn main() {
 	if !settings.force {
 		println!("ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED.");
 		print!("Do you want to continue? (y/n) ");
-
-		out::show_cursor();
 		let _ = stdout().flush();
 
 		let mut input = String::new();
 		stdin().read_line(&mut input).unwrap();
 		if !input.starts_with("y") { return; }
-
-		out::hide_cursor();
 	}
 
 	// Delete directories

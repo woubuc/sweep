@@ -1,20 +1,21 @@
-use out::Progress;
-
 use std::fs::remove_dir_all;
 use std::path::PathBuf;
 
 /// Removes the given paths
 pub fn remove(paths : Vec<PathBuf>) {
-	let mut progress = Progress::new(paths.len(), "Deleting directories");
+	println!("Deleting directories...");
+	let mut i = 0;
 
 	for path in paths {
 		if let Err(err) = remove_dir_all(path) {
-			progress.error();
-			println!("{}", err);
+			println!("Error while deleting directory: {}", err);
 		}
 
-		progress.step();
+		i += 1;
+		if i % 10 == 0 {
+			println!("  Deleted {} directories", i);
+		}
 	}
 
-	progress.finish();
+	println!("  Deleted {} directories", i);
 }

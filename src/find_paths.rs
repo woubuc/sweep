@@ -1,5 +1,3 @@
-use out;
-use out::Progress;
 use languages::identify;
 use file_utils::walk_dirs;
 
@@ -50,11 +48,8 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 		let _ = tx.send(Some(found_paths.into_iter().filter(|p| identify(p).is_some()).collect()));
 	});
 
-	// Create progress bar to display search progress
+	println!("Searching for code projects...");
 	let mut searched = 0;
-	let mut progress = Progress::new(1, "Searching for code projects");
-	progress.progress(1);
-	progress.status("0 directories searched");
 
 	loop {
 		// Wait for a message from the thread
@@ -62,18 +57,13 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 
 		// Handle errors
 		if let Err(err) = data {
-			progress.error();
 			println!("Error in thread: {}", err);
-
-			out::show_cursor();
 			process::exit(0);
 		}
 
 		// If the paths are loaded, return them
 		let data = data.unwrap();
 		if let Some(res) = data {
-			progress.finish();
-
 			// Log the search stats
 			let results : Vec<PathBuf> = res;
 			println!("  Searched {} directories", searched);
@@ -84,6 +74,8 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 
 		// If we're still going, display the progress
 		searched += 1;
-		progress.status(&searched.to_string());
+		if searched % 1000 == 0 {
+			println!("  Searched {} directories", searched);
+		}
 	}
 }

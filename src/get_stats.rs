@@ -1,5 +1,3 @@
-use out;
-use out::Progress;
 use languages::*;
 use file_utils::{fname, walk_files};
 
@@ -33,7 +31,6 @@ pub struct StatsResult {
 /// # Arguments
 /// * `project_paths` - Paths to analyse
 pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
-	let project_count = project_paths.len();
 	let (tx, rc) = channel();
 
 	// Spawn thread to process the data so it doesn't block the main thread
@@ -103,8 +100,8 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		let _ = tx.send(Some(StatsResult {stats, langs, total_size_src, total_size_deps_candelete, total_size_deps_modified}));
 	});
 
-	// Create progress bar
-	let mut progress = Progress::new(project_count, "Analysing projects");
+	println!("Analysing projects...");
+	let mut i = 0;
 
 	loop {
 		// Wait for a message from the thread
@@ -112,18 +109,13 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 
 		// Handle errors
 		if let Err(err) = data {
-			progress.error();
 			println!("Error in thread: {}", err);
-
-			out::show_cursor();
 			process::exit(0);
 		}
 
 		// If the stats are loaded, return them
 		let data = data.unwrap();
 		if let Some(res) = data {
-			progress.finish();
-
 			// Log the stats
 			let results : StatsResult = res;
 			println!("  Analysed {} projects", results.stats.len());
@@ -156,8 +148,10 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		}
 
 		// If we're still going, display the progress
-		let i = progress.step();
-		progress.status(&i.to_string());
+		i += 1;
+		if i % 10 == 0 {
+			println!("  Analysed {} projects", i);
+		}
 	}
 }
 

@@ -1,5 +1,3 @@
-use out;
-
 use std::env;
 use std::process;
 use std::path::{Path, PathBuf};
@@ -66,8 +64,6 @@ impl Settings {
 			// then exit the application
 			if match_flag(&flag, "-h", "-help") {
 				println!("{}", HELP);
-
-				out::show_cursor();
 				process::exit(0);
 			}
 

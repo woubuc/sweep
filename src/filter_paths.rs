@@ -1,4 +1,3 @@
-use out;
 use get_stats::Stats;
 use languages::identify;
 
@@ -40,7 +39,6 @@ pub fn filter(projects : HashMap<PathBuf, Stats>, all : bool) -> (Vec<PathBuf>, 
 		println!("  This is likely because your projects were recently modified");
 		println!("  Run the application with `--all` to disregard file age");
 		println!("  See --help for more options");
-		out::show_cursor();
 		process::exit(0);
 	}
 
