@@ -14,15 +14,16 @@ I'm still learning Rust so this project is nowhere near 'complete', or even
 is still a work in progress.
 
 ## Install
-- Make sure you have installed Rust
+- Make sure you have installed Rust Nightly
 - Clone the repo and build the application with `cargo build`
 
 ## How it works
 Run the application with `project-cleanup --help` to see the options.
 
 ## Supported languages
-- Node.js (will remove the `node_modules` directory)
+- Node.js (will remove the `node_modules` and `.cache` directories)
 - Rust (will remove the `target` directory)
+- Java (will remove the `.gradle` and `build` directories)
 
 ## License
 The application is published under the MIT license.

@@ -43,6 +43,7 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		let mut langs = HashMap::new();
 		langs.insert(NODE, 0);
 		langs.insert(RUST, 0);
+		langs.insert(JAVA, 0);
 
 		let mut total_size_src = 0;
 		let mut total_size_deps_candelete = 0;
