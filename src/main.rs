@@ -7,13 +7,12 @@ mod languages;
 mod file_utils;
 mod find_paths;
 mod get_stats;
+mod filter_paths;
+mod remove_paths;
 
-use languages::identify;
+use settings::Settings;
 use get_stats::format_size;
 
-//use analyser::analyse;
-use settings::Settings;
-use std::fs::remove_dir_all;
 use std::io::{stdin, stdout, Write};
 
 fn main() {
@@ -32,55 +31,29 @@ fn main() {
 	// Get stats for the discovered projects
 	let stats = get_stats::get(paths);
 
-	let mut remove = Vec::new();
-	let mut remove_size = 0;
-	for (path, stats) in stats {
-		if stats.modified > 2592000 || settings.all {
-			if let Some(lang) = identify(&path) {
-				remove_size += stats.size_deps;
+	// Find the paths that should be removed
+	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
 
-				for lang_path in lang.get_paths() {
-					let p = path.join(lang_path);
-					if p.exists() { remove.push(p); }
-				}
-			}
-		}
-	}
-
-	if remove.len() == 0 {
-		println!("No projects have directories that can be removed");
-		println!("  This is likely because your projects were recently modified");
-		println!("  Run the application with `--all` to disregard file age");
-		println!("  See --help for more options");
-		out::show_cursor();
-		return;
-	}
-
+	// Verify paths to remove
 	println!("Ready to remove {} of unnecessary files", format_size(remove_size));
 	println!("Directories that will be removed:");
-	for path in &remove {
-		println!("  - {}", path.display());
-	}
-	println!("ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED.");
-	print!("Do you want to continue? (y/n) ");
+	for path in &remove { println!("  - {}", path.display()); }
 
-	out::show_cursor();
-	let _ = stdout().flush();
+	if !settings.force {
+		println!("ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED.");
+		print!("Do you want to continue? (y/n) ");
 
-	let mut input = String::new();
-	stdin().read_line(&mut input).unwrap();
-	if !input.starts_with("y") { return; }
+		out::show_cursor();
+		let _ = stdout().flush();
 
-	out::hide_cursor();
-	println!("Deleting directories...");
+		let mut input = String::new();
+		stdin().read_line(&mut input).unwrap();
+		if !input.starts_with("y") { return; }
 
-	for path in remove {
-		println!("  {}", path.display());
-		if let Err(err) = remove_dir_all(path) {
-			println!("ERR");
-			println!("{}", err);
-		}
+		out::hide_cursor();
 	}
 
+	// Delete directories
+	remove_paths::remove(remove);
 	println!("Done");
 }
