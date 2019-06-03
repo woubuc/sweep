@@ -77,10 +77,9 @@ impl Settings {
 			}
 		}
 
-		// If no paths were given, use the current working directory as root
-		if settings.paths.len() < 1 {
-			let cwd = env::current_dir().expect("Could not get working directory");
-			settings.paths.push(cwd);
+		// If no paths were given, use the current directory as root
+		if settings.paths.len() == 0 {
+			settings.paths.push(".".into());
 		}
 
 		// Return the completed settings object
