@@ -11,7 +11,7 @@ authors = ["Wouter Buckens <wouter@epicteddy.com> (https://www.woubuc.be)"]
 readme = "README.md"
 license = "MIT"
 
-keywords = ["cleanup", "project", "clean", "empty", "delete", "remove", "free", "javascript", "rust", "java"]
+keywords = ["cleanup", "project", "clean", "delete", "free"]
 categories = ["command-line-utilities"]
 
 [dependencies]
