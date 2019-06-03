@@ -1,4 +1,7 @@
 # Project Cleanup
+[![Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
+[![GitHub](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
+
 This little tool will recursively browse a directory to find code 
 projects in several languages. If the project hasn't been touched for 
 more than a month, it will remove directories containing libraries, 
