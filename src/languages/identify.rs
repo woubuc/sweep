@@ -1,6 +1,6 @@
-use languages::*;
-
 use std::path::Path;
+
+use super::*;
 
 pub fn identify(p : &Path) -> Option<Language> {
 	if p.join("package.json").exists() { return Some(NODE); }

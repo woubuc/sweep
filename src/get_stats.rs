@@ -1,15 +1,13 @@
-use languages::*;
-use file_utils::{fname, walk_files};
-
-use humansize::{FileSize, file_size_opts as options};
-
-use std::thread;
-use std::process;
-use std::io::stdout;
-use std::io::Write;
+use std::{ thread, process };
+use std::io::{ stdout, Write };
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
+
+use humansize::{ FileSize, file_size_opts as options };
+
+use crate::languages::*;
+use crate::file_utils::{ fname, walk_files };
 
 /// The file stats corresponding to a single project directory
 #[derive(Debug)]

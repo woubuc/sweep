@@ -1,9 +1,9 @@
-use get_stats::Stats;
-use languages::identify;
-
 use std::process;
 use std::path::PathBuf;
 use std::collections::HashMap;
+
+use crate::get_stats::Stats;
+use crate::languages::identify;
 
 /// Filters the given projects to determine which directories should be removed
 ///

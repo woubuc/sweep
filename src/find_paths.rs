@@ -1,12 +1,10 @@
-use languages::identify;
-use file_utils::walk_dirs;
-
-use std::thread;
-use std::io::stdout;
-use std::io::Write;
-use std::process;
+use std::{ thread, process };
+use std::io::{ stdout, Write };
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
+
+use crate::languages::identify;
+use crate::file_utils::walk_dirs;
 
 /// Finds all code projects in the given directory or directories
 ///

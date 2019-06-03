@@ -1,4 +1,4 @@
-extern crate humansize;
+use std::io::{ stdin, stdout, Write };
 
 mod settings;
 mod languages;
@@ -8,10 +8,8 @@ mod get_stats;
 mod filter_paths;
 mod remove_paths;
 
-use settings::Settings;
-use get_stats::format_size;
-
-use std::io::{stdin, stdout, Write};
+use crate::settings::Settings;
+use crate::get_stats::format_size;
 
 fn main() {
 	println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));

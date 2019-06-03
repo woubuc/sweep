@@ -1,8 +1,8 @@
 mod identify;
 mod language;
 
-pub use languages::identify::identify;
-pub use languages::language::Language;
+pub use self::identify::identify;
+pub use self::language::Language;
 
 /// Node.js projects
 pub const NODE : Language = Language {

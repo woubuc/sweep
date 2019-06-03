@@ -1,6 +1,5 @@
-use std::env;
-use std::process;
-use std::path::{Path, PathBuf};
+use std::{ env, process };
+use std::path::{ Path, PathBuf };
 
 /// The documentation text displayed when using the --help flag
 const HELP : &str = "

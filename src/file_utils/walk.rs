@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::{ Path, PathBuf };
 
 /// Finds all directories and subdirectories for a given path, unless stopped
 ///

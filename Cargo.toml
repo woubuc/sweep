@@ -1,7 +1,20 @@
 [package]
+edition = "2018"
+
 name = "project-cleanup"
 version = "0.3.3"
-authors = ["Wouter <wou.buc@gmail.com>"]
+
+description = "CLI tool to clean up and remove old generated code in your Rust, Javascript and Java projects"
+repository = "https://github.com/woubuc/project-cleanup"
+authors = ["Wouter Buckens <wouter@epicteddy.com> (https://www.woubuc.be)"]
+
+readme = "README.md"
+license = "MIT"
+
+keywords = ["cleanup", "project", "clean", "empty", "delete", "remove", "free", "javascript", "rust", "java"]
+categories = ["command-line-utilities"]
+
+publish = ["project-cleanup"]
 
 [dependencies]
 humansize = "1.1.0"
