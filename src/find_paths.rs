@@ -2,6 +2,8 @@ use languages::identify;
 use file_utils::walk_dirs;
 
 use std::thread;
+use std::io::stdout;
+use std::io::Write;
 use std::process;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
@@ -48,7 +50,8 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 		let _ = tx.send(Some(found_paths.into_iter().filter(|p| identify(p).is_some()).collect()));
 	});
 
-	println!("Searching for code projects...");
+	println!("Searching for code projects");
+	print!("  Searching 0 directories...");
 	let mut searched = 0;
 
 	loop {
@@ -66,7 +69,7 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 		if let Some(res) = data {
 			// Log the search stats
 			let results : Vec<PathBuf> = res;
-			println!("  Searched {} directories", searched);
+			println!("\r  Searched {} directories     ", searched);
 			println!("  Found {} projects", results.len());
 
 			return results;
@@ -74,8 +77,7 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 
 		// If we're still going, display the progress
 		searched += 1;
-		if searched % 1000 == 0 {
-			println!("  Searched {} directories", searched);
-		}
+		print!("\r  Searched {} directories", searched);
+		stdout().flush();
 	}
 }

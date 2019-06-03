@@ -5,6 +5,8 @@ use humansize::{FileSize, file_size_opts as options};
 
 use std::thread;
 use std::process;
+use std::io::stdout;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
@@ -100,7 +102,8 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		let _ = tx.send(Some(StatsResult {stats, langs, total_size_src, total_size_deps_candelete, total_size_deps_modified}));
 	});
 
-	println!("Analysing projects...");
+	println!("Analysing projects");
+	print!("\r  Analysed 0 projects...");
 	let mut i = 0;
 
 	loop {
@@ -118,7 +121,7 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		if let Some(res) = data {
 			// Log the stats
 			let results : StatsResult = res;
-			println!("  Analysed {} projects", results.stats.len());
+			println!("\r  Analysed {} projects     ", results.stats.len());
 
 			for (lang, count) in results.langs {
 				if count == 1 {
@@ -149,9 +152,8 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 
 		// If we're still going, display the progress
 		i += 1;
-		if i % 10 == 0 {
-			println!("  Analysed {} projects", i);
-		}
+		print!("\r  Analysing {} projects...", i);
+		stdout().flush();
 	}
 }
 
