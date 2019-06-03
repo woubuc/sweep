@@ -1,10 +1,12 @@
 use std::{ thread, process };
-use std::io::{ stdout, Write };
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 
+use colored::*;
+
 use crate::languages::identify;
 use crate::file_utils::walk_dirs;
+use crate::spinner::Spinner;
 
 /// Finds all code projects in the given directory or directories
 ///
@@ -49,7 +51,7 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 	});
 
 	println!("Searching for code projects");
-	print!("  Searching 0 directories...");
+	let mut spinner = Spinner::new("Searching directories...");
 	let mut searched = 0;
 
 	loop {
@@ -67,15 +69,14 @@ pub fn find(root_paths : Vec<PathBuf>) -> Vec<PathBuf> {
 		if let Some(res) = data {
 			// Log the search stats
 			let results : Vec<PathBuf> = res;
-			println!("\r  Searched {} directories     ", searched);
-			println!("  Found {} projects", results.len());
+			spinner.finish(format!("Searched {} directories", searched).as_str());
+			println!("  {} Found {} projects", "i".blue(), results.len());
 
 			return results;
 		}
 
 		// If we're still going, display the progress
 		searched += 1;
-		print!("\r  Searched {} directories", searched);
-		stdout().flush();
+		spinner.update(format!("Searching {} directories", searched).as_str());
 	}
 }

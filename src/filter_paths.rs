@@ -2,6 +2,8 @@ use std::process;
 use std::path::PathBuf;
 use std::collections::HashMap;
 
+use colored::*;
+
 use crate::get_stats::Stats;
 use crate::languages::identify;
 
@@ -35,10 +37,10 @@ pub fn filter(projects : HashMap<PathBuf, Stats>, all : bool) -> (Vec<PathBuf>, 
 
 	// If there are no projects that should actually be removed, just stop here
 	if remove.len() == 0 {
-		println!("No projects have directories that can be removed");
+		println!("{}", "No projects have directories that can be removed".yellow());
 		println!("  This is likely because your projects were recently modified");
-		println!("  Run the application with `--all` to disregard file age");
-		println!("  See --help for more options");
+		println!("  Run the application with `{}` to disregard file age", "--all".bold());
+		println!("  Try `{}` for more options", "--help".bold());
 		process::exit(0);
 	}
 

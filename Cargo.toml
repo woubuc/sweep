@@ -15,4 +15,5 @@ keywords = ["cleanup", "project", "clean", "delete", "free"]
 categories = ["command-line-utilities"]
 
 [dependencies]
+colored = "1.8.0"
 humansize = "1.1.0"

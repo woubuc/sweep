@@ -1,13 +1,14 @@
 use std::{ thread, process };
-use std::io::{ stdout, Write };
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
 
+use colored::*;
 use humansize::{ FileSize, file_size_opts as options };
 
 use crate::languages::*;
 use crate::file_utils::{ fname, walk_files };
+use crate::spinner::Spinner;
 
 /// The file stats corresponding to a single project directory
 #[derive(Debug)]
@@ -101,7 +102,7 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 	});
 
 	println!("Analysing projects");
-	print!("\r  Analysed 0 projects...");
+	let mut spinner = Spinner::new("Analysing projects...");
 	let mut i = 0;
 
 	loop {
@@ -119,29 +120,29 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 		if let Some(res) = data {
 			// Log the stats
 			let results : StatsResult = res;
-			println!("\r  Analysed {} projects     ", results.stats.len());
+			spinner.finish(format!("Analysed {} projects", results.stats.len()).as_str());
 
 			for (lang, count) in results.langs {
 				if count == 1 {
-					println!("  - {} {} project", count, lang.name());
+					println!("    - {} {} project", count.to_string().bold(), lang.name());
 				} else if count > 1 {
-					println!("  - {} {} projects", count, lang.name());
+					println!("    - {} {} projects", count.to_string().bold(), lang.name());
 				}
 			}
 
-			println!("  {} of source code and project files", format_size(results.total_size_src));
+			println!("  {} of source code and project files", format_size(results.total_size_src).bold());
 
 			if results.total_size_deps_candelete > 0 || results.total_size_deps_modified > 0 {
 				if results.total_size_deps_candelete == 0 {
 					println!("  No dependencies & builds over 1 month old");
 				} else {
-					println!("  {} of dependencies & builds over 1 month old", format_size(results.total_size_deps_candelete));
+					println!("  {} of dependencies & builds over 1 month old", format_size(results.total_size_deps_candelete).bold());
 				}
 
 				if results.total_size_deps_modified == 0 {
 					println!("  No recently used dependencies & builds");
 				} else {
-					println!("  {} of recently used dependencies & builds", format_size(results.total_size_deps_modified));
+					println!("  {} of recently used dependencies & builds", format_size(results.total_size_deps_modified).bold());
 				}
 			}
 
@@ -150,8 +151,7 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 
 		// If we're still going, display the progress
 		i += 1;
-		print!("\r  Analysing {} projects...", i);
-		stdout().flush();
+		spinner.update(format!("Analysing {} projects...", i).as_str());
 	}
 }
 

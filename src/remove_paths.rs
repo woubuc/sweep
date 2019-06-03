@@ -1,9 +1,11 @@
 use std::fs::remove_dir_all;
 use std::path::PathBuf;
+use crate::spinner::Spinner;
 
 /// Removes the given paths
 pub fn remove(paths : Vec<PathBuf>) {
-	println!("Deleting directories...");
+	println!("Deleting selected directories");
+	let mut spinner = Spinner::new("Deleting directories...");
 	let mut i = 0;
 
 	for path in paths {
@@ -12,10 +14,8 @@ pub fn remove(paths : Vec<PathBuf>) {
 		}
 
 		i += 1;
-		if i % 10 == 0 {
-			println!("  Deleted {} directories", i);
-		}
+		spinner.update(format!("Deleted {} directories", i).as_str());
 	}
 
-	println!("  Deleted {} directories", i);
+	spinner.finish(format!("Deleted {} directories", i).as_str());
 }

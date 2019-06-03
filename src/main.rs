@@ -1,4 +1,5 @@
 use std::io::{ stdin, stdout, Write };
+use colored::*;
 
 mod settings;
 mod languages;
@@ -7,12 +8,13 @@ mod find_paths;
 mod get_stats;
 mod filter_paths;
 mod remove_paths;
+mod spinner;
 
 use crate::settings::Settings;
 use crate::get_stats::format_size;
 
 fn main() {
-	println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));
+	println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
 
 	// Parse CLI settings
 	let settings = Settings::from_args(std::env::args());
@@ -27,12 +29,11 @@ fn main() {
 	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
 
 	// Verify paths to remove
-	println!("Ready to remove {} of unnecessary files", format_size(remove_size));
-	println!("Directories that will be removed:");
-	for path in &remove { println!("  - {}", path.display()); }
+	println!("Ready to remove {} of unnecessary files", format_size(remove_size).cyan().bold());
+	println!("{}", "ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED".white().on_red().bold());
+	for path in &remove { println!("    {}", path.display()); }
 
 	if !settings.force {
-		println!("ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED.");
 		print!("Do you want to continue? (y/n) ");
 		let _ = stdout().flush();
 
@@ -43,5 +44,4 @@ fn main() {
 
 	// Delete directories
 	remove_paths::remove(remove);
-	println!("Done");
 }
