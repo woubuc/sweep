@@ -12,7 +12,7 @@ const DONE : &'static str = "✔";
 ///
 /// The spinner will rotate when it is updated, it will not be updated
 /// automatically. Printing anything to the terminal will break the
-/// spinner. Call `.done()` to finish the spinner.
+/// spinner. Call `.finish()` to finish the spinner.
 pub struct Spinner {
 	step : usize,
 	step_increased : Instant,
@@ -20,7 +20,10 @@ pub struct Spinner {
 }
 
 impl Spinner {
-	/// Initialises the spinner
+	/// Starts a new spinner
+	///
+	/// # Arguments
+	/// * `initial_text` - The initial text message to display after the spinner indicator
 	pub fn new(initial_text : &'static str) -> Spinner {
 		let mut spinner = Spinner {
 			step: 0,
@@ -33,6 +36,9 @@ impl Spinner {
 	}
 
 	/// Updates the spinner with a new message
+	///
+	/// # Arguments
+	/// * `text` - The text message to display after the spinner indicator
 	pub fn update(&mut self, text : &str) {
 		if self.step_increased.elapsed().as_millis() >= MS_PER_STEP {
 			self.step = match self.step {
@@ -48,13 +54,20 @@ impl Spinner {
 		let indicator : &'static str = STEPS[self.step];
 		let spacer = " ".repeat(self.text_length - text.len());
 		print!("\r  {} {}{}", indicator.cyan(), text, spacer);
-		stdout().flush();
+
+		// Try to flush the stdout buffer to update the print line before the
+		// process is done, but it's not a problem if it won't flush right away
+		// so we can just capture the result without doing anything with it
+		let _ = stdout().flush();
 	}
 
-	/// Finishes the spinner with the given message
+	/// Finishes the spinner with a green checkmark
+	///
+	/// # Arguments
+	/// * `text` - The completion message to display
 	pub fn finish(&self, text : &str) {
 		let spacer = " ".repeat(self.text_length - text.len());
 		println!("\r  {} {}{}", DONE.green(), text, spacer);
-		stdout().flush();
+		let _ = stdout().flush();
 	}
 }
