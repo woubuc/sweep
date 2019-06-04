@@ -2,8 +2,7 @@ use std::{ env, process };
 use std::path::{ Path, PathBuf };
 
 /// The documentation text displayed when using the --help flag
-const HELP : &str = "
-This utility cleans up build & dependency directories in old projects to
+const HELP : &str = "This utility cleans up build & dependency directories in old projects to
 preserve disk space
 
 USAGE:
@@ -11,13 +10,13 @@ USAGE:
 
 ARGS:
     <PATH>...   One or more directories where the utility should start searching
-                If omitted, will use the current working directory
 
 FLAGS:
-    -a, --all     Remove directories even in recently used projects
-    -f, --force   Skip confirmation before removing directories
+    -a, --all      Remove directories even in recently used projects
+    -f, --force    Skip confirmation before removing directories
 
-    -h, --help    Shows this help
+    -h, --help     Shows this help
+    -v, --version  Displays the current application version
 
 More info: github.com/woubuc/node-cleanup
 Questions, bugs & other issues: github.com/woubuc/node-cleanup/issues";
@@ -31,7 +30,7 @@ pub struct Settings {
 	pub all : bool,
 
 	/// If true, skip confirmation before removal
-	pub force : bool
+	pub force : bool,
 }
 
 impl Settings {
@@ -59,16 +58,22 @@ impl Settings {
 
 		// Go through all arguments one by one
 		for flag in args {
+			// If the version flag is given, just exit because the version
+			// gets printed at the start of the program by default
+			if match_flag(&flag, "-v", "--version") {
+				process::exit(0);
+			}
+
 			// If the help flag is given, immediately show the help info and
 			// then exit the application
-			if match_flag(&flag, "-h", "-help") {
+			if match_flag(&flag, "-h", "--help") {
 				println!("{}", HELP);
 				process::exit(0);
 			}
 
 			// If boolean flags are given, enable the corresponding setting
-			else if match_flag(&flag, "-a", "-all") { settings.all = true; }
-			else if match_flag(&flag, "-f", "-force") { settings.force = true; }
+			else if match_flag(&flag, "-a", "--all") { settings.all = true; }
+			else if match_flag(&flag, "-f", "--force") { settings.force = true; }
 
 			// If the argument was not a flag, it's probably a path, so add it
 			// to the settings if it was successfully parsed
@@ -94,7 +99,7 @@ impl Settings {
 /// * `compact` - Compact flag notation
 /// * `full`    - Full flag notation
 fn match_flag(flag : &str, compact : &str, full : &str) -> bool {
-	flag.eq(compact) || flag.contains(full)
+	flag.eq(compact) || flag.eq(full)
 }
 
 /// Parses a flag into a complete, absolute directory path
