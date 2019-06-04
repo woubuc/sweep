@@ -34,12 +34,18 @@ fn main() {
 	for path in &remove { println!("    {}", path.display()); }
 
 	if !settings.force {
-		print!("Do you want to continue? (y/n) ");
-		let _ = stdout().flush();
+		loop {
+			print!("Do you want to continue? (y/n) ");
+			let _ = stdout().flush();
 
-		let mut input = String::new();
-		stdin().read_line(&mut input).unwrap();
-		if !input.starts_with("y") { return; }
+			let mut input = String::new();
+			stdin().read_line(&mut input).unwrap();
+			let input = input.trim();
+
+			if input == "n" { return; }
+			if input == "y" { break; }
+			println!("  {}", "Please enter either 'y' or 'n'".yellow());
+		}
 	}
 
 	// Delete directories
