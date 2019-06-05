@@ -48,13 +48,13 @@ impl Spinner {
 		let indicator : &'static str = STEPS[self.step];
 		let spacer = " ".repeat(self.text_length - text.len());
 		print!("\r  {} {}{}", indicator.cyan(), text, spacer);
-		stdout().flush();
+		stdout().flush().expect("Flushing stdout failed in update step");
 	}
 
 	/// Finishes the spinner with the given message
 	pub fn finish(&self, text : &str) {
 		let spacer = " ".repeat(self.text_length - text.len());
 		println!("\r  {} {}{}", DONE.green(), text, spacer);
-		stdout().flush();
+		stdout().flush().expect("Flushing stdout failed in finish step");
 	}
 }
