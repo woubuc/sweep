@@ -25,8 +25,6 @@ fn main() {
 		settings::ParseResult::Errored => process::exit(1),
 	};
 
-	println!("Settings: {:?}", settings);
-
 	// Find the project paths
 	let paths = find_paths::find(settings.paths, settings.ignore);
 
