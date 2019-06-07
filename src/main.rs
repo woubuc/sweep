@@ -1,4 +1,6 @@
 use std::io::{ stdin, stdout, Write };
+use std::process;
+
 use colored::*;
 
 mod settings;
@@ -17,10 +19,16 @@ fn main() {
 	println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
 
 	// Parse CLI settings
-	let settings = Settings::from_args(std::env::args());
+	let settings = match Settings::from_args(std::env::args()) {
+		settings::ParseResult::Ok(settings) => settings,
+		settings::ParseResult::Done => return,
+		settings::ParseResult::Errored => process::exit(1),
+	};
+
+	println!("Settings: {:?}", settings);
 
 	// Find the project paths
-	let paths = find_paths::find(settings.paths);
+	let paths = find_paths::find(settings.paths, settings.ignore);
 
 	// Get stats for the discovered projects
 	let stats = get_stats::get(paths);

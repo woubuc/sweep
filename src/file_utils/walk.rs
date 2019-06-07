@@ -1,5 +1,18 @@
 use std::path::{ Path, PathBuf };
 
+/// Action to take when in a directory with `walk_dirs`
+#[derive(Debug)]
+pub enum WalkDirsAction {
+	/// Add this entry and recurse into the directory
+	AddAndRecurse,
+
+	/// Add this entry and don't recurse
+	Add,
+
+	/// Ignore this entry
+	Ignore,
+}
+
 /// Finds all directories and subdirectories for a given path, unless stopped
 ///
 /// # Arguments
@@ -7,8 +20,9 @@ use std::path::{ Path, PathBuf };
 /// * `on_dir` - Function that is called for every directory found, should
 ///              return `true` if walking should continue into this directory
 ///              or `false` if not
-pub fn walk_dirs(dir : &Path, on_dir : &Fn(&Path) -> bool) -> Vec<PathBuf> {
-	let mut paths = Vec::new();
+pub fn walk_dirs(dir : &Path, on_dir : &Fn(&Path) -> WalkDirsAction) -> (Vec<PathBuf>, Vec<PathBuf>) {
+	let mut found_paths = Vec::new();
+	let mut ignored_paths = Vec::new();
 
 	// Read directory contents
 	if let Ok(contents) = dir.read_dir() {
@@ -17,17 +31,22 @@ pub fn walk_dirs(dir : &Path, on_dir : &Fn(&Path) -> bool) -> Vec<PathBuf> {
 			if entry.path().is_file() { continue; }
 			if entry.file_name().to_string_lossy().starts_with(".") { continue; }
 
-			// Store directory
-			paths.push(entry.path());
+			// Recurse if needed
+			match on_dir(&entry.path()) {
+				WalkDirsAction::AddAndRecurse => {
+					found_paths.push(entry.path());
 
-			// Recurse if wanted
-			if on_dir(&entry.path()) {
-				paths.append(&mut walk_dirs(&entry.path(), on_dir));
+					let (found, ignored) = &mut walk_dirs(&entry.path(), on_dir);
+					found_paths.append(found);
+					ignored_paths.append(ignored);
+				},
+				WalkDirsAction::Add => found_paths.push(entry.path()),
+				WalkDirsAction::Ignore => ignored_paths.push(entry.path()),
 			}
 		}
 	}
 
-	return paths;
+	return (found_paths, ignored_paths);
 }
 
 /// Finds all files in a directory and its subdirectories, unless stopped
