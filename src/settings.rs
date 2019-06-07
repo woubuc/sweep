@@ -9,7 +9,7 @@ const HELP : &str = "This utility cleans up build & dependency directories in ol
 preserve disk space
 
 USAGE:
-    node-cleanup [OPTIONS] <PATH>...
+    project-cleanup [OPTIONS] <PATH>...
 
 ARGS:
     <PATH>...   One or more directories to start searching
@@ -23,8 +23,8 @@ OPTIONS:
     -h, --help          Shows this help
     -v, --version       Displays the current application version
 
-More info: github.com/woubuc/node-cleanup
-Questions, bugs & other issues: github.com/woubuc/node-cleanup/issues";
+More info: github.com/woubuc/project-cleanup
+Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues";
 
 pub enum ParseResult {
 	/// If all is well, the parse result should return with the settings object
