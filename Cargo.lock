@@ -80,7 +80,7 @@ dependencies = [
 
 [[package]]
 name = "project-cleanup"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "colored 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "humansize 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
