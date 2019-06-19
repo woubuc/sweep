@@ -1,6 +1,7 @@
 # Project Cleanup
 [![Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![GitHub](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
+[![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
 
 This little tool will recursively browse a directory to find code 
 projects in several languages. If the project hasn't been touched for 
@@ -15,7 +16,9 @@ drive right now.
 ![Screenshot](README.png)
 
 ## Install
-`cargo install project-cleanup`
+Download the binary from the [releases page](https://github.com/woubuc/project-cleanup/releases)
+
+Or install via Cargo: `cargo install project-cleanup`
 
 ## How it works
 Run the application with `project-cleanup --help` to see the options.
