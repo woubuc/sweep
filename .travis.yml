@@ -1,17 +1,24 @@
 language: rust
 rust: stable
 
-script:
-  - cargo build --release
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install zip gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 gcc-i686-linux-gnu
+  - rustup target add x86_64-pc-windows-gnu
+  - rustup target add i686-pc-windows-gnu
+  - rustup target add x86_64-unknown-linux-gnu
+  - rustup target add i686-unknown-linux-gnu
 
-matrix:
-  include:
-    - os: linux
-      before_deploy: ci/linux.sh
-    - os: windows
-      before_deploy: ci/windows.sh
-
-
+# The entire build has to go in before_deploy because Travis doesn't provide a way to keep these files around
+before_deploy:
+  - cargo rustc --release --target=x86_64-pc-windows-gnu -- -C linker=x86_64-w64-mingw32-gcc
+  - zip -Tj dist/project-cleanup-windows-64bit.zip target/x86_64-pc-windows-gnu/release/project-cleanup.exe
+  - cargo rustc --release --target=i686-pc-windows-gnu -- -C linker=i686-w64-mingw32-gcc -C link-args=-mwindows -C panic=abort
+  - zip -Tj dist/project-cleanup-windows-32bit.zip target/i686-pc-windows-gnu/release/project-cleanup.exe
+  - cargo rustc --release --target=x86_64-unknown-linux-gnu
+  - zip -Tj dist/project-cleanup-linux-64bit.zip target/x86_64-unknown-linux-gnu/release/project-cleanup
+  - cargo rustc --release --target=i686-unknown-linux-gnu -- -C linker=i686-linux-gnu-gcc
+  - zip -Tj dist/project-cleanup-linux-32bit.zip target/i686-unknown-linux-gnu/release/project-cleanup
 deploy:
   provider: releases
   api_key:
