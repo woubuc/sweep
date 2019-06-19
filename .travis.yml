@@ -1,19 +1,21 @@
 language: rust
 rust: stable
 
+script:
+  - cargo build --release
+
 matrix:
   include:
     - os: linux
-      env: DEPLOY_FILE=target/release/project-cleanup
+      before_deploy: ci/linux.sh
     - os: windows
-      env: DEPLOY_FILE=target/release/project-cleanup.exe
+      before_deploy: ci/windows.sh
+
 
 deploy:
   provider: releases
   api_key:
     secure: $GITHUB_RELEASES_KEY
-  file: $DEPLOY_FILE
+  file: dist/*
   skip_cleanup: true
   draft: true
-  on:
-    tags: true
