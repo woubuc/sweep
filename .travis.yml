@@ -1,0 +1,19 @@
+language: rust
+rust: stable
+
+matrix:
+  include:
+    - os: linux
+      env: DEPLOY_FILE=target/release/project-cleanup
+    - os: windows
+      env: DEPLOY_FILE=target/release/project-cleanup.exe
+
+deploy:
+  provider: releases
+  api_key:
+    secure: $GITHUB_RELEASES_KEY
+  file: $DEPLOY_FILE
+  skip_cleanup: true
+  draft: true
+  on:
+    tags: true
