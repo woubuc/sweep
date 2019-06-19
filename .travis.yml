@@ -23,6 +23,7 @@ deploy:
   provider: releases
   api_key:
     secure: $GITHUB_RELEASES_KEY
+  file_glob: true
   file: dist/*
   skip_cleanup: true
   draft: true
