@@ -16,6 +16,13 @@ use crate::settings::Settings;
 use crate::get_stats::format_size;
 
 fn main() {
+
+	// If on Windows, we need to enable the virtual terminal
+	// to allow for proper colour support. Other platforms should
+	// support ansi colouring without a problem.
+	#[cfg(windows)]
+	colored::control::set_virtual_terminal(true).expect("Could not initialise virtual terminal");
+
 	println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
 
 	// Parse CLI settings

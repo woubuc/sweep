@@ -124,9 +124,9 @@ pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
 
 			for (lang, count) in results.langs {
 				if count == 1 {
-					println!("    - {} {} project", count.to_string().bold(), lang.name());
+					println!("     - {} {} project", count.to_string().bold(), lang.name());
 				} else if count > 1 {
-					println!("    - {} {} projects", count.to_string().bold(), lang.name());
+					println!("     - {} {} projects", count.to_string().bold(), lang.name());
 				}
 			}
 

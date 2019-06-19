@@ -5,8 +5,8 @@ use colored::Colorize;
 use std::io::{ stdout, Write };
 
 const MS_PER_STEP : u128 = 100;
-const STEPS : [&'static str; 10] = ["⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏", "⠋", "⠙", "⠹"];
-const DONE : &'static str = "✔";
+const STEPS : [&'static str; 10] = ["⠸ ", "⠼ ", "⠴ ", "⠦ ", "⠧ ", "⠇ ", "⠏ ", "⠋ ", "⠙ ", "⠹ "];
+const DONE : &'static str = "ok";
 
 /// Shows a rotating spinner in the terminal
 ///

@@ -77,10 +77,10 @@ pub fn find(root_paths : Vec<PathBuf>, ignore : Option<Regex>) -> Vec<PathBuf> {
 			// Log the search stats
 			spinner.finish(format!("Searched {} directories", searched).as_str());
 
-			println!("  {} Found {} {}", "i".blue(), found.len(), plural(found.len(), "project", "projects"));
+			println!("  {} Found {} {}", "i ".blue(), found.len(), plural(found.len(), "project", "projects"));
 
 			if ignored.len() > 0 {
-				println!("  {} Ignored {} {}", "i".blue(), ignored.len(), plural(ignored.len(), "directory", "directories"));
+				println!("  {} Ignored {} {}", "i ".blue(), ignored.len(), plural(ignored.len(), "directory", "directories"));
 			}
 
 			return found;
