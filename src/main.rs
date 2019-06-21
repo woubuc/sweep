@@ -1,66 +1,86 @@
-use std::io::{ stdin, stdout, Write };
 use std::process;
 
-use colored::*;
+use dunce::canonicalize;
 
-mod settings;
-mod languages;
+mod analyse;
+mod find;
+
 mod file_utils;
-mod find_paths;
-mod get_stats;
-mod filter_paths;
-mod remove_paths;
-mod spinner;
+mod output;
+mod settings;
+
+//mod languages;
+//mod file_utils;
+//mod find_paths;
+//mod get_stats;
+//mod filter_paths;
+//mod remove_paths;
+//mod spinner;
 
 use crate::settings::Settings;
-use crate::get_stats::format_size;
+use crate::output::output;
 
 fn main() {
 
-	// If on Windows, we need to enable the virtual terminal
-	// to allow for proper colour support. Other platforms should
-	// support ansi colouring without a problem.
-	#[cfg(windows)]
-	colored::control::set_virtual_terminal(true).expect("Could not initialise virtual terminal");
-
-	println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
+	output().main_title();
 
 	// Parse CLI settings
-	let settings = match Settings::from_args(std::env::args()) {
+	let mut settings = match Settings::from_args(std::env::args()) {
 		settings::ParseResult::Ok(settings) => settings,
 		settings::ParseResult::Done => return,
 		settings::ParseResult::Errored => process::exit(1),
 	};
 
-	// Find the project paths
-	let paths = find_paths::find(settings.paths, settings.ignore);
+	// Resolve to absolute paths - TODO move this into settings
+	settings.paths = settings.paths.iter()
+		.map(|p| canonicalize(p).expect("Cannot resolve to absolute path"))
+		.collect();
 
-	// Get stats for the discovered projects
-	let stats = get_stats::get(paths);
-
-	// Find the paths that should be removed
-	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
-
-	// Verify paths to remove
-	println!("Ready to remove {} of unnecessary files", format_size(remove_size).cyan().bold());
-	println!("{}", "ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED".white().on_red().bold());
-	for path in &remove { println!("    {}", path.display()); }
-
-	if !settings.force {
-		loop {
-			print!("Do you want to continue? (y/n) ");
-			let _ = stdout().flush();
-
-			let mut input = String::new();
-			stdin().read_line(&mut input).unwrap();
-			let input = input.trim();
-
-			if input == "n" { return; }
-			if input == "y" { break; }
-			println!("  {}", "Please enter either 'y' or 'n'".yellow());
-		}
+	// Display resolved paths to user
+	for path in &settings.paths {
+		output().main_input_path(path);
 	}
 
-	// Delete directories
-	remove_paths::remove(remove);
+	// Discover cleanable directories
+	let cleanables = find::discover(settings);
+
+	if cleanables.len() == 0 {
+		output().main_no_cleanables_found();
+		return;
+	}
+
+	// Analyse discovered cleanables
+
+//
+//	// Find the project paths
+//	let paths = find_paths::find(settings.paths, settings.ignore);
+//
+//	// Get stats for the discovered projects
+//	let stats = get_stats::get(paths);
+//
+//	// Find the paths that should be removed
+//	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
+//
+//	// Verify paths to remove
+//	println!("Ready to remove {} of unnecessary files", format_size(remove_size).cyan().bold());
+//	println!("{}", "ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED".white().on_red().bold());
+//	for path in &remove { println!("    {}", path.display()); }
+//
+//	if !settings.force {
+//		loop {
+//			print!("Do you want to continue? (y/n) ");
+//			let _ = stdout().flush();
+//
+//			let mut input = String::new();
+//			stdin().read_line(&mut input).unwrap();
+//			let input = input.trim();
+//
+//			if input == "n" { return; }
+//			if input == "y" { break; }
+//			println!("  {}", "Please enter either 'y' or 'n'".yellow());
+//		}
+//	}
+//
+//	// Delete directories
+//	remove_paths::remove(remove);
 }
