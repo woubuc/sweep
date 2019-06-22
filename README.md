@@ -33,4 +33,5 @@ issues and pull requests to add more languages and/or more unnecessary
 directories in already added languages.
 
 ## License
-The application is published under the MIT license.
+Everything in this repository is published under the MIT license. See
+the LICENSE file for more information.
