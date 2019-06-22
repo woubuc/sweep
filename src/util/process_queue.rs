@@ -22,11 +22,12 @@ const TIMEOUT_MS_BETWEEN_TRIES: u64 = 50;
 /// performance will be less than optimal.
 ///
 /// # Arguments
-/// `queue`    - The queue to process
-/// `on_entry` - Called for each entry in the queue
-///              Argument is the entry
-/// `on_retry` - Called before a worker thread retries because the queue is empty
-///              Argument is the number of retries that have been attempted
+/// `num_threads` - The number of threads to spawn
+/// `queue`       - The queue to process
+/// `on_entry`    - Called for each entry in the queue
+///                 Argument is the entry
+/// `on_retry`    - Called before a worker thread retries because the queue is empty
+///                 Argument is the number of retries that have been attempted
 ///
 /// # Example
 /// ```rust
@@ -34,8 +35,9 @@ const TIMEOUT_MS_BETWEEN_TRIES: u64 = 50;
 /// queue.push(7);
 /// queue.push(42);
 ///
-/// // Below will print `7` and `42` in any order
+/// // This call will print `7` and `42` in any order
 /// process_queue(
+///     4,
 ///     &queue,
 ///     |num| println!("{}", num),
 ///     |tries| print!()
