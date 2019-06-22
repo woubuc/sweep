@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Describes a discovered cleanable project
 #[derive(Debug)]
@@ -35,6 +35,8 @@ impl Project {
 		}
 	}
 
+	pub fn root(&self) -> &Path { &self.root }
+
 	/// Marks a subdirectory of this project's root directory as a dependency,
 	/// if that directory exists. If the subdirectory doesn't exist, nothing
 	/// happens.
@@ -48,5 +50,11 @@ impl Project {
 		if path.exists() && path.is_dir() && !self.dependency_dirs.contains(&path) {
 			self.dependency_dirs.push(path);
 		}
+	}
+
+	/// Checks if the given path is listed as a dependency directory of this
+	/// project
+	pub fn is_dependency_dir<P : Into<PathBuf>>(&self, path : P) -> bool {
+		return self.dependency_dirs.contains(&path.into());
 	}
 }

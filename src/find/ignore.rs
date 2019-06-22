@@ -1,5 +1,6 @@
-use regex::Regex;
 use std::path::Path;
+
+use regex::Regex;
 
 /// Checks if a given path is ignored
 ///

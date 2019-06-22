@@ -2,15 +2,17 @@ use std::process;
 
 use dunce::canonicalize;
 
+pub use crate::output::output;
+pub use crate::project::Project;
+use crate::settings::Settings;
+
 mod analyse;
 mod find;
 mod util;
 
-mod file_utils;
 mod output;
 mod settings;
 mod project;
-
 
 //mod get_stats;
 //mod languages;
@@ -20,11 +22,6 @@ mod project;
 //mod filter_paths;
 //mod remove_paths;
 //mod spinner;
-
-use crate::settings::Settings;
-
-pub use crate::output::output;
-pub use crate::project::Project;
 
 fn main() {
 
@@ -55,9 +52,7 @@ fn main() {
 		return;
 	}
 
-	while let Ok(p) = cleanables.pop() {
-		println!("{:?}", p);
-	}
+	analyse::analyse(cleanables, &settings);
 
 	// Get stats for the discovered projects
 //	let stats = get_stats::get(cleanables);

@@ -10,6 +10,7 @@ use crate::util::process_queue;
 
 use super::identify::identify_cleanable_project;
 use super::ignore::is_ignored;
+use std::cmp::min;
 
 /// Recursively walks the configured paths and discovers all cleanable directories
 ///
@@ -58,8 +59,14 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 		return discovered;
 	}
 
-	// Process the paths queue
-	process_queue(
+	// I've set the number of threads to spawn to six times the CPU cores
+	// because at this point the balance between read speed and CPU usage
+	// seemed to be most ideal in my very limited tests with a quad-core
+	// (8 threads) CPU on an SSD. My HDD caps out at 100% read speed with
+	// just a few threads, so it doesn't make much of a difference there.
+	// Real-world tests and experience may give different results and the
+	// number of threads may need to be adjusted later on.
+	process_queue(num_cpus::get() * 6,
 		&path_queue,
 		|path| {
 			output().discover_searching_path(&path);
@@ -67,7 +74,7 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 
 			discover_in_directory(&path, &settings, &path_queue, &discovered);
 		},
-		|tries| output().discover_searching_sleep(tries)
+		|tries| output().discover_searching_retry(tries)
 	);
 
 	output().discover_searching_done(total_paths.into_inner(), discovered.len());

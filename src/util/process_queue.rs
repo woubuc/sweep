@@ -41,17 +41,13 @@ const TIMEOUT_MS_BETWEEN_TRIES: u64 = 50;
 ///     |tries| print!()
 /// );
 /// ```
-pub fn process_queue<F1, F2, T>(queue: &SegQueue<T>, on_entry: F1, on_retry: F2)
+pub fn process_queue<F1, F2, T>(num_threads : usize, queue: &SegQueue<T>, on_entry: F1, on_retry: F2)
 	where F1: Sync + Fn(T), F2: Sync + Fn(usize), T: Send {
 
-	// I've set the number of threads to spawn to four times the CPU cores
-	// because at this point the balance between read speed and CPU usage
-	// seemed to be most ideal in my very limited tests with a quad-core
-	// (8 threads) CPU on an SSD. My HDD caps out at 100% read speed with
-	// just a few threads, so it doesn't make much of a difference there.
-	// Real-world tests and experience may give different results and the
-	// number of threads may need to be adjusted later on.
-	let num_threads = num_cpus::get() * 4;
+	// No use in spawning all these threads and processing an empty queue
+	if queue.len() == 0 {
+		return;
+	}
 
 	// Crossbeam scoped threads
 	scope(|s| {

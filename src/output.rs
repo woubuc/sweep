@@ -59,20 +59,6 @@ impl OutputManager {
 		}
 	}
 
-	pub fn main_no_old_cleanables(&self) {
-		if self.colours {
-			println!("{}", "No cleanable directories found".yellow());
-			println!("  This is likely because your projects were recently modified");
-			println!("  Run the application with `{}` to disregard file age", "--all".bold());
-			println!("  Try `{}` for more options", "--help".bold());
-		} else {
-			println!("No cleanable directories found");
-			println!("  This is likely because your projects were recently modified");
-			println!("  Run the application with `--all` to disregard file age");
-			println!("  Try `--help` for more options");
-		}
-	}
-
 	pub fn discover_searching_path(&self, path : &Path) {
 		if self.colours {
 			self.print("Searching".cyan().bold(), path.to_str().unwrap_or(""));
@@ -81,7 +67,7 @@ impl OutputManager {
 		}
 	}
 
-	pub fn discover_searching_sleep(&self, tries : usize) {
+	pub fn discover_searching_retry(&self, tries : usize) {
 		if self.colours {
 			self.print("Searching".cyan().bold(), ".".repeat(tries));
 		} else {
@@ -109,7 +95,7 @@ impl OutputManager {
 		self.println_plain(format!("{} cleanable projects found", discovered));
 	}
 
-	pub fn analyse_processing_path(&self, path : &Path) {
+	pub fn analyse_filter_by_modified_path(&self, path : &Path) {
 		if self.colours {
 			self.print("Analysing".cyan().bold(), path.to_str().unwrap_or(""));
 		} else {
@@ -117,11 +103,47 @@ impl OutputManager {
 		}
 	}
 
-	pub fn analyse_processing_sleep(&self, tries : usize) {
+	pub fn analyse_filter_by_modified_retry(&self, tries : usize) {
 		if self.colours {
 			self.print("Analysing".cyan().bold(), ".".repeat(tries));
 		} else {
 			self.print("Analysing", ".".repeat(tries));
+		}
+	}
+
+	pub fn analyse_filter_by_modified_done(&self, old_projects : usize, recent_projects : usize) {
+		if self.colours {
+			if recent_projects == 0 {
+				self.println("Analysed".green().bold(), "All projects can be cleaned");
+			} else if old_projects == 0 {
+				self.println("Analysed".green().bold(), "All projects have been modified recently");
+			} else {
+				self.println("Analysed".green().bold(), format!("{} of {} projects can be cleaned", old_projects, old_projects + recent_projects));
+				self.println_plain(format!("{} projects have been modified recently", recent_projects));
+			}
+		} else {
+			if recent_projects == 0 {
+				self.println("Analysed", "All projects can be cleaned");
+			} else if old_projects == 0 {
+				self.println("Analysed", "All projects have been modified recently");
+			} else {
+				self.println("Analysed", format!("{} of {} projects can be cleaned", old_projects, old_projects + recent_projects));
+				self.println_plain(format!("{} projects have been modified recently", recent_projects));
+			}
+		}
+	}
+
+	pub fn analyse_no_old_cleanables(&self) {
+		if self.colours {
+			println!("{}", "No cleanable directories found".yellow());
+			println!("  This is likely because your projects were recently modified");
+			println!("  Run the application with `{}` to disregard file age", "--all".bold());
+			println!("  Try `{}` for more options", "--help".bold());
+		} else {
+			println!("No cleanable directories found");
+			println!("  This is likely because your projects were recently modified");
+			println!("  Run the application with `--all` to disregard file age");
+			println!("  Try `--help` for more options");
 		}
 	}
 

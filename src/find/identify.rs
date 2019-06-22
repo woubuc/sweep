@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use crate::file_utils::exists_in_path;
 use crate::Project;
+use crate::util::file_utils::exists_in_path;
 
 /// Checks if a given directory is cleanable and identifies the
 /// dependency subdirectories
@@ -40,7 +40,7 @@ pub fn identify_cleanable_project(path : &Path) -> Option<Project> {
 		project.try_add_dependency_dir(".gradle");
 		project.try_add_dependency_dir("build");
 	}
-	
+
 	if found {
 		return Some(project);
 	} else {
