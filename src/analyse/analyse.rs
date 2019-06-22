@@ -1,9 +1,4 @@
-use std::path::{Path, PathBuf};
-use std::thread;
-use std::time::{Duration, Instant};
-
 use crossbeam::queue::SegQueue;
-use crossbeam::thread::scope;
 
 use crate::output::output;
 use crate::Project;

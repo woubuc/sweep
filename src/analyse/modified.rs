@@ -1,4 +1,3 @@
-use std::fs::FileType;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -8,7 +7,6 @@ use crate::output;
 use crate::Project;
 use crate::util::file_utils::file_name;
 use crate::util::process_queue;
-use std::cmp::min;
 
 const ALWAYS_IGNORE_DIRS : [&'static str; 3] = [
 	".idea",
