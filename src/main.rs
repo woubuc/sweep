@@ -4,11 +4,13 @@ use dunce::canonicalize;
 
 mod analyse;
 mod find;
+mod util;
 
 mod file_utils;
 mod output;
 mod settings;
 mod project;
+
 
 //mod get_stats;
 //mod languages;

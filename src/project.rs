@@ -1,7 +1,5 @@
 use std::path::PathBuf;
 
-use crossbeam::queue::SegQueue;
-
 /// Describes a discovered cleanable project
 #[derive(Debug)]
 pub struct Project {

@@ -1,14 +1,12 @@
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::thread;
-use std::time::Duration;
 
 use crossbeam::queue::SegQueue;
-use crossbeam::scope;
 
 use crate::output;
 use crate::Project;
 use crate::settings::Settings;
+use crate::util::process_queue;
 
 use super::identify::identify_cleanable_project;
 use super::ignore::is_ignored;
@@ -60,58 +58,18 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 		return discovered;
 	}
 
-	// Since walking the directories is highly IO-dependent and not CPU-heavy,
-	// the total runtime can be heavily optimised by using several concurrent
-	// threads to process the queue of directories.
-	//
-	// I've set it to twice the number of CPU cores, because adding more shows
-	// diminishing returns on my quad-core (8 threads) machine with SSD and
-	// doesn't seem to provide any noticeable speed-up based on some (limited
-	// and very non-deterministic) tests. Real-world testing on a variety of
-	// devices may give different results however, and this number may need to
-	// be adjusted later on.
-	let num_threads = num_cpus::get() * 2;
+	// Process the paths queue
+	process_queue(
+		&path_queue,
+		|path| {
+			output().discover_searching_path(&path);
+			total_paths.fetch_add(1, Ordering::SeqCst);
 
-	// Scoped threads provided by crossbeam
-	scope(|s| {
-		for _ in 0..num_threads {
-			s.spawn(|_| {
+			discover_in_directory(&path, &settings, &path_queue, &discovered);
+		},
+		|tries| output().discover_searching_sleep(tries)
+	);
 
-				// Since the queue may be empty at one point but new paths
-				// could get added by another thread right after, every thread
-				// should try the queue several times before terminating.
-				const TIMEOUT_MS_BETWEEN_TRIES : u64 = 50;
-				const MAX_TRIES : usize = 5;
-
-				let mut tries : usize = 0;
-
-				while tries < MAX_TRIES {
-
-					// Try to get the next path from the queue and process it
-					if let Ok(path) = path_queue.pop() {
-						tries = 0;
-
-						output().discover_searching_path(&path);
-						discover_in_directory(&path, &settings, &path_queue, &discovered);
-
-						total_paths.fetch_add(1, Ordering::SeqCst);
-						continue;
-					}
-
-
-					thread::sleep(Duration::from_millis(TIMEOUT_MS_BETWEEN_TRIES));
-					output().discover_searching_sleep(tries);
-
-					tries += 1;
-				}
-			});
-		}
-	}).expect("A threading error occured");
-
-
-	// Crossbeam's `scope` function will wait to join all created threads
-	// so at this point all processing is done and we have our queue of
-	// discovered cleanable directories
 	output().discover_searching_done(total_paths.into_inner(), discovered.len());
 	return discovered;
 }
