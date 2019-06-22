@@ -1,8 +1,8 @@
-![Project Cleanup](./readme_logo.svg)
+[![Project Cleanup](./readme_logo.svg)](https://github.com/woubuc/project-cleanup)
 
-[![Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
-[![GitHub](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
+[![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
+[![License](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
 
 This little tool will recursively browse a directory to find code 
 projects in several languages. If the project hasn't been touched for 
