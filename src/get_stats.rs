@@ -1,14 +1,17 @@
 use std::{ thread, process };
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
 
 use colored::*;
 use humansize::{ FileSize, file_size_opts as options };
+use crossbeam::queue::SegQueue;
+use walkdir::{WalkDir, DirEntry};
 
 use crate::languages::*;
-use crate::file_utils::{ fname, walk_files };
+use crate::file_utils::{fname, walk_files, exists_in_path};
 use crate::spinner::Spinner;
+use crate::output::output;
 
 /// The file stats corresponding to a single project directory
 #[derive(Debug)]
@@ -31,75 +34,49 @@ pub struct StatsResult {
 ///
 /// # Arguments
 /// * `project_paths` - Paths to analyse
-pub fn get(project_paths : Vec<PathBuf>) -> HashMap<PathBuf, Stats> {
-	let (tx, rc) = channel();
+pub fn get(project_paths : SegQueue<PathBuf>) -> HashMap<PathBuf, Stats> {
 
-	// Spawn thread to process the data so it doesn't block the main thread
-	thread::spawn(move || {
-		let mut stats = HashMap::new();
+	let mut stats = HashMap::new();
 
-		let mut langs = HashMap::new();
-		langs.insert(NODE, 0);
-		langs.insert(RUST, 0);
-		langs.insert(JAVA, 0);
+	let mut total_size_src = 0;
+	let mut total_size_deps_candelete = 0;
+	let mut total_size_deps_modified = 0;
 
-		let mut total_size_src = 0;
-		let mut total_size_deps_candelete = 0;
-		let mut total_size_deps_modified = 0;
+	while let Ok(path) = project_paths.pop() {
 
-		for path in project_paths {
-			// Send progress bar tick
-			let _ = tx.send(None);
+		output().analyse_processing_path(&path);
 
-			// Identify the project language
-			let lang = identify(&path).unwrap();
-
-			// Keep track of the number of projects in each language
-			if let Some(lang_counter) = langs.get_mut(&lang) {
-				*lang_counter += 1;
-			}
-
-			// Get size of the source files
-			let size_src = walk_files(&path, &|p| !lang.get_paths().contains(&fname(&&p)))
+		// Get size of the dependencies, build files, etc.
+		let mut size_deps = 0;
+		for p in lang.get_paths() {
+			size_deps += walk_files(&path.join(p), &|_| true)
 				.into_iter()
 				.filter_map(|p| p.metadata().ok())
 				.map(|d| d.len())
 				.fold(0, |acc, i| acc + i);
-
-			total_size_src += size_src;
-
-			// Get size of the dependencies, build files, etc.
-			let mut size_deps = 0;
-			for p in lang.get_paths() {
-				size_deps += walk_files(&path.join(p), &|_| true)
-					.into_iter()
-					.filter_map(|p| p.metadata().ok())
-					.map(|d| d.len())
-					.fold(0, |acc, i| acc + i);
-			}
-
-			// Get how long ago this project was modified
-			let modified = walk_files(&path, &|p| !lang.get_paths().contains(&fname(&&p)))
-				.into_iter()
-				.filter_map(|p| p.metadata().ok())
-				.filter_map(|d| d.modified().ok())
-				.filter_map(|m| m.elapsed().ok())
-				.map(|e| e.as_secs())
-				.min().unwrap();
-
-			// Count the total size (depending on modified date)
-			if modified > 2592000 {
-				total_size_deps_candelete += size_deps;
-			} else {
-				total_size_deps_modified += size_deps;
-			}
-
-			stats.insert(path.clone(), Stats {size_deps, size_src, modified});
 		}
 
-		// Send the results to the main thread
-		let _ = tx.send(Some(StatsResult {stats, langs, total_size_src, total_size_deps_candelete, total_size_deps_modified}));
-	});
+		// Get how long ago this project was modified
+		let modified = walk_files(&path, &|p| !lang.get_paths().contains(&fname(&&p)))
+			.into_iter()
+			.filter_map(|p| p.metadata().ok())
+			.filter_map(|d| d.modified().ok())
+			.filter_map(|m| m.elapsed().ok())
+			.map(|e| e.as_secs())
+			.min().unwrap();
+
+		// Count the total size (depending on modified date)
+		if modified > 2592000 {
+			total_size_deps_candelete += size_deps;
+		} else {
+			total_size_deps_modified += size_deps;
+		}
+
+		stats.insert(path.clone(), Stats {size_deps, size_src, modified});
+	}
+
+	// Send the results to the main thread
+	let _ = tx.send(Some(StatsResult {stats, langs, total_size_src, total_size_deps_candelete, total_size_deps_modified}));
 
 	println!("Analysing projects");
 	let mut spinner = Spinner::new("Analysing projects...");

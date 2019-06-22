@@ -8,7 +8,9 @@ mod find;
 mod file_utils;
 mod output;
 mod settings;
+mod project;
 
+//mod get_stats;
 //mod languages;
 //mod file_utils;
 //mod find_paths;
@@ -18,7 +20,9 @@ mod settings;
 //mod spinner;
 
 use crate::settings::Settings;
-use crate::output::output;
+
+pub use crate::output::output;
+pub use crate::project::Project;
 
 fn main() {
 
@@ -42,22 +46,20 @@ fn main() {
 	}
 
 	// Discover cleanable directories
-	let cleanables = find::discover(settings);
+	let cleanables = find::discover(&settings);
 
 	if cleanables.len() == 0 {
 		output().main_no_cleanables_found();
 		return;
 	}
 
-	// Analyse discovered cleanables
+	while let Ok(p) = cleanables.pop() {
+		println!("{:?}", p);
+	}
 
-//
-//	// Find the project paths
-//	let paths = find_paths::find(settings.paths, settings.ignore);
-//
-//	// Get stats for the discovered projects
-//	let stats = get_stats::get(paths);
-//
+	// Get stats for the discovered projects
+//	let stats = get_stats::get(cleanables);
+
 //	// Find the paths that should be removed
 //	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
 //

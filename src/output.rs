@@ -6,6 +6,7 @@ use std::path::Path;
 use crossterm::terminal;
 use colored::*; // TODO replace colored with crossterm colours
 use lazy_static::lazy_static;
+use std::io::{stdout, Write};
 
 lazy_static! {
 	static ref OUTPUT_MANAGER : OutputManager = OutputManager::create();
@@ -19,6 +20,8 @@ pub struct OutputManager {
 	colours : bool,
 	term_width : usize
 }
+
+// TODO find a better solution for lacking colour support than having every output line twice in here
 
 impl OutputManager {
 	fn create() -> OutputManager {
@@ -98,12 +101,36 @@ impl OutputManager {
 
 	pub fn discover_searching_done(&self, total_paths : usize, discovered : usize) {
 		if self.colours {
-			self.println("Searched".green().bold(), format!("{} directories analysed", total_paths));
+			self.println("Searched".green().bold(), format!("{} directories searched", total_paths));
 		} else {
-			self.println("Searched", format!("{} directories analysed", total_paths));
+			self.println("Searched", format!("{} directories searched", total_paths));
 		}
 
-		self.println_plain(format!("{} cleanable directories found", discovered));
+		self.println_plain(format!("{} cleanable projects found", discovered));
+	}
+
+	pub fn analyse_processing_path(&self, path : &Path) {
+		if self.colours {
+			self.print("Analysing".cyan().bold(), path.to_str().unwrap_or(""));
+		} else {
+			self.print("Analysing", path.to_str().unwrap_or(""));
+		}
+	}
+
+	pub fn analyse_processing_sleep(&self, tries : usize) {
+		if self.colours {
+			self.print("Analysing".cyan().bold(), ".".repeat(tries));
+		} else {
+			self.print("Analysing", ".".repeat(tries));
+		}
+	}
+
+	pub fn analyse_processing_done(&self, discovered : usize) {
+		if self.colours {
+			self.println("Analysed".green().bold(), format!("{} unnecessary directories found in projects", discovered));
+		} else {
+			self.println("Analysed", format!("{} unnecessary directories found in projects", discovered));
+		}
 	}
 
 
@@ -117,11 +144,20 @@ impl OutputManager {
 				 message,
 				" ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
 		);
+
+		let _ = stdout().flush();
 	}
 
 	fn println<L : Into<ColoredString>,S : Into<String>>(&self, label : L, message : S) {
-		self.print(label, message);
-		println!();
+		let message = self.shorten(message.into());
+		let label = label.into();
+
+		println!("{}{} {}{}",
+			   " ".repeat(LABEL_WIDTH - label.len()),
+			   label,
+			   message,
+			   " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
+		);
 	}
 
 	fn println_plain<S : Into<String>>(&self, message : S) {

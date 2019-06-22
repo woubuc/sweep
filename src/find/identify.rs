@@ -1,30 +1,49 @@
 use std::path::Path;
 
 use crate::file_utils::exists_in_path;
+use crate::Project;
 
-/// If any of these files exist in a directory, it is a project directory
-const DETECT_FILES : [&'static str; 3] = [
-//	".cleanup",     // Custom project-cleanup list
-//	".gitignore",   // Generic Git repository - TODO add support for ignore files
-	"Cargo.toml",   // Rust
-	"package.json", // Node.js
-	"pom.xml",      // Java
-];
+/// Checks if a given directory is cleanable and identifies the
+/// dependency subdirectories
+///
+/// # Arguments
+/// `path` - The path to check
+///
+/// # Returns
+/// The identified project, or None if the given path is not a project
+pub fn identify_cleanable_project(path : &Path) -> Option<Project> {
 
-/// Checks if a given directory is cleanable
-pub fn is_cleanable(path : &Path) -> bool {
-
-	// Make sure this is a directory, normally this is checked by the caller
-	// but you can never be too sure
+	// A project can only be a directory
 	if !path.is_dir() {
-		return false;
+		return None;
 	}
 
-	for filename in &DETECT_FILES {
-		if exists_in_path(path, filename) {
-			return true;
-		}
+	let mut project = Project::new(path.clone());
+	let mut found = false;
+
+	// Rust projects
+	if exists_in_path(path, "Cargo.toml") {
+		found = true;
+		project.try_add_dependency_dir("target");
 	}
 
-	return false;
+	// Node.js projects
+	if exists_in_path(path, "package.json") {
+		found = true;
+		project.try_add_dependency_dir("node_modules");
+		project.try_add_dependency_dir(".cache");
+	}
+
+	// Java projects
+	if exists_in_path(path, "pom.xml") {
+		found = true;
+		project.try_add_dependency_dir(".gradle");
+		project.try_add_dependency_dir("build");
+	}
+	
+	if found {
+		return Some(project);
+	} else {
+		return None;
+	}
 }

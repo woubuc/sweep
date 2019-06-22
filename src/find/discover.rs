@@ -1,93 +1,117 @@
-use std::path::{PathBuf, Path};
-use std::sync::atomic::{ AtomicUsize, Ordering };
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::Duration;
-use std::error::Error;
 
 use crossbeam::queue::SegQueue;
 use crossbeam::scope;
 
-use crate::output::output;
+use crate::output;
+use crate::Project;
 use crate::settings::Settings;
 
-use super::identify::is_cleanable;
+use super::identify::identify_cleanable_project;
 use super::ignore::is_ignored;
 
-/// How long a thread should sleep before retrying if the queue returned empty
-const RETRY_SLEEP_DURATION : Duration = Duration::from_millis(50);
-
-/// Number of times the queue may return empty before a thread is closed
-const MAX_RETRIES : usize = 10;
-
-
 /// Recursively walks the configured paths and discovers all cleanable directories
-pub fn discover(settings : Settings) -> SegQueue<PathBuf> {
-	let input_paths = settings.paths.len();
+///
+/// In case there are several levels of subdirectories to walk, this function
+/// will spawn several worker threads to improve processing throughput
+///
+/// # Arguments
+/// `settings` - The application settings object
+///
+/// # Returns
+/// A queue containing all discovered projects
+pub fn discover(settings : &Settings) -> SegQueue<Project> {
 
-	// Queue of paths to process
-	let paths = SegQueue::new();
-	let total_paths = AtomicUsize::new(0);
+	// Will contain a queue of paths that still need to be processed
+	let path_queue = SegQueue::new();
 
 	// Will contain all discovered cleanable directories
 	let discovered = SegQueue::new();
 
+	// Atomic counter for the total number of paths processed
+	// Just for displaying this information in the output, it's
+	// not used for anything else
+	let total_paths = AtomicUsize::new(settings.paths.len());
 
+
+	// Before starting, check if any of the configured paths are cleanable and
+	// discover the first level of subdirectories, to ensure the paths queue
+	// already contains several directories. If the paths queue has enough
+	// paths queued for all threads to start working immediately, the work
+	// will finish faster and there will be less risk of threads timing out
+	// before all paths have been processed.
+	//
+	// If there was only one level to crawl, the queue will be empty after this
+	// and the thread creation can be skipped entirely, improving performance
+	// even more.
 	for path in &settings.paths {
-
-		// If a configured path is cleanable, we don't need to discover it anymore
-		if is_cleanable(&path) {
-			discovered.push(path.to_path_buf());
+		if let Some(project) = identify_cleanable_project(&path) {
+			discovered.push(project);
 		} else {
-			discover_in_directory(path, &settings, &paths, &discovered);
+			discover_in_directory(path, &settings, &path_queue, &discovered);
 		}
 	}
 
-	// If all configured paths were cleanable, cut things short
-	// before creating any discovery threads
-	if paths.len() == 0 {
-		output().discover_searching_done(input_paths, discovered.len());
+	if path_queue.len() == 0 {
+		output().discover_searching_done(total_paths.into_inner(), discovered.len());
 		return discovered;
 	}
 
-	// Thank god for crossbeam
+	// Since walking the directories is highly IO-dependent and not CPU-heavy,
+	// the total runtime can be heavily optimised by using several concurrent
+	// threads to process the queue of directories.
+	//
+	// I've set it to twice the number of CPU cores, because adding more shows
+	// diminishing returns on my quad-core (8 threads) machine with SSD and
+	// doesn't seem to provide any noticeable speed-up based on some (limited
+	// and very non-deterministic) tests. Real-world testing on a variety of
+	// devices may give different results however, and this number may need to
+	// be adjusted later on.
+	let num_threads = num_cpus::get() * 2;
+
+	// Scoped threads provided by crossbeam
 	scope(|s| {
-		for _ in 0..num_cpus::get() {
+		for _ in 0..num_threads {
 			s.spawn(|_| {
-				// To keep track of how many times the queue came up empty
+
+				// Since the queue may be empty at one point but new paths
+				// could get added by another thread right after, every thread
+				// should try the queue several times before terminating.
+				const TIMEOUT_MS_BETWEEN_TRIES : u64 = 50;
+				const MAX_TRIES : usize = 5;
+
 				let mut tries : usize = 0;
 
-				loop {
-					if let Ok(path) = paths.pop() {
+				while tries < MAX_TRIES {
+
+					// Try to get the next path from the queue and process it
+					if let Ok(path) = path_queue.pop() {
 						tries = 0;
 
-						// Discover the path we just got from the queue
 						output().discover_searching_path(&path);
-						discover_in_directory(&path, &settings, &paths, &discovered);
+						discover_in_directory(&path, &settings, &path_queue, &discovered);
 
-						// Done with this path, continue on to the next
 						total_paths.fetch_add(1, Ordering::SeqCst);
 						continue;
 					}
 
-					// If no paths were in the queue, sleep the thread for a few
-					// ms to give other threads time to push new paths to the queue
-					thread::sleep(RETRY_SLEEP_DURATION);
+
+					thread::sleep(Duration::from_millis(TIMEOUT_MS_BETWEEN_TRIES));
 					output().discover_searching_sleep(tries);
 
-					// If there are still no paths in the queue after 10 tries,
-					// return out of the closure to stop the thread
 					tries += 1;
-					if tries > MAX_RETRIES { return }
 				}
 			});
 		}
-
 	}).expect("A threading error occured");
 
 
-	// The `scope` function will wait to join all created threads, so
-	// once we're here all that's left to do is return the discovered
-	// cleanable directories
+	// Crossbeam's `scope` function will wait to join all created threads
+	// so at this point all processing is done and we have our queue of
+	// discovered cleanable directories
 	output().discover_searching_done(total_paths.into_inner(), discovered.len());
 	return discovered;
 }
@@ -95,33 +119,37 @@ pub fn discover(settings : Settings) -> SegQueue<PathBuf> {
 
 /// Discovers the subdirectories of a given path
 ///
-/// If a path is discovered as a cleanable directory, it's added to
-/// the `discovered` queue. All other directories are added to the
-/// `paths` queue to be discovered later.
-fn discover_in_directory(path : &Path, settings : &Settings, paths : &SegQueue<PathBuf>, discovered : &SegQueue<PathBuf>) {
+/// # Arguments
+/// `path`       - Path to search
+/// `settings`   - The application settings object
+/// `path_queue` - Subdirectories that need to be discovered will be added to this queue
+/// `discovered` - Identified cleanable projects will be added to this queue
+fn discover_in_directory(path : &Path, settings : &Settings, path_queue : &SegQueue<PathBuf>, discovered : &SegQueue<Project>) {
 
 	// We can only read in directories
 	if !path.is_dir() {
 		return;
 	}
 
-	let read_dir = path.read_dir();
-	if let Err(e) = read_dir {
-		output().discover_searching_error(e.description(), &path);
-		return;
-	}
+	let read_dir = match path.read_dir() {
+		Err(e) => {
+			output().discover_searching_error(&e.to_string(), &path);
+			return;
+		},
+
+		Ok(entries) => entries
+			.filter_map(|entry| entry.ok())
+			.map(|entry| entry.path())
+			.filter(|path| path.is_dir())
+			.filter(|path| !is_ignored(&settings.ignore, path))
+	};
 
 	// Go over all subdirectories in the given directory and check if they're cleanable
-	for path in read_dir.unwrap()
-		.filter_map(|e| e.ok())
-		.map(|e| e.path())
-		.filter(|p| !is_ignored(&settings.ignore, p))
-		.filter(|p| p.is_dir()) {
-
-		if is_cleanable(&path) {
-			discovered.push(path.to_path_buf());
+	for path in read_dir {
+		if let Some(project) = identify_cleanable_project(&path) {
+			discovered.push(project);
 		} else {
-			paths.push(path.to_path_buf());
+			path_queue.push(path);
 		}
 	}
 }
