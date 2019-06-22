@@ -1,4 +1,4 @@
-[![Project Cleanup](./readme_logo.svg)](https://github.com/woubuc/project-cleanup)
+[![Project Cleanup](./readme_logo.png)](https://github.com/woubuc/project-cleanup)
 
 [![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
@@ -14,7 +14,7 @@ re-generated at any time, but if you haven't worked on the project for
 a month chances are you don't need them taking up space on your hard 
 drive right now.
 
-![Screenshot](README.png)
+![Screenshot](readme_screenshot.png)
 
 ## Install
 Download the binary from the [releases page](https://github.com/woubuc/project-cleanup/releases)
