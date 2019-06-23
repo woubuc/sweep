@@ -1,7 +1,8 @@
-# Project Cleanup
-[![Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
-[![GitHub](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
+[![Project Cleanup](./readme_logo.png)](https://woubuc.github.io/project-cleanup/)
+
+[![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
+[![License](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
 
 This little tool will recursively browse a directory to find code 
 projects in several languages. If the project hasn't been touched for 
@@ -13,10 +14,11 @@ re-generated at any time, but if you haven't worked on the project for
 a month chances are you don't need them taking up space on your hard 
 drive right now.
 
-![Screenshot](README.png)
+![Screenshot](readme_screenshot.png)
 
 ## Install
-Download the binary from the [releases page](https://github.com/woubuc/project-cleanup/releases)
+Download the binary for your platform from the 
+[releases page](https://github.com/woubuc/project-cleanup/releases)
 
 Or install via Cargo: `cargo install project-cleanup`
 
@@ -33,4 +35,5 @@ issues and pull requests to add more languages and/or more unnecessary
 directories in already added languages.
 
 ## License
-The application is published under the MIT license.
+Everything in this repository is published under the MIT license. See
+the LICENSE file for more information.
