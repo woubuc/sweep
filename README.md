@@ -1,4 +1,4 @@
-[![Project Cleanup](./readme_logo.png)](https://github.com/woubuc/project-cleanup)
+[![Project Cleanup](./readme_logo.png)](https://woubuc.github.io/project-cleanup/)
 
 [![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
@@ -17,7 +17,8 @@ drive right now.
 ![Screenshot](readme_screenshot.png)
 
 ## Install
-Download the binary from the [releases page](https://github.com/woubuc/project-cleanup/releases)
+Download the binary for your platform from the 
+[releases page](https://github.com/woubuc/project-cleanup/releases)
 
 Or install via Cargo: `cargo install project-cleanup`
 
