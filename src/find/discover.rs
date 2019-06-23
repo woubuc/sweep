@@ -10,6 +10,7 @@ use crate::util::process_queue;
 
 use super::identify::identify_cleanable_project;
 use super::ignore::is_ignored;
+use std::cmp::max;
 
 /// Recursively walks the configured paths and discovers all cleanable directories
 ///
@@ -66,7 +67,7 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 	// Real-world tests and experience may give different results and the
 	// number of threads may need to be adjusted later on.
 	process_queue(
-		num_cpus::get() * 6,
+		max(12, num_cpus::get() * 6),
 		&path_queue,
 		|path| {
 			output().discover_searching_path(&path);

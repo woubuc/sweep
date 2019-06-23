@@ -1,3 +1,6 @@
+use core::borrow::Borrow;
+use std::fs::remove_dir_all;
+use std::io::stdin;
 use std::process;
 
 use dunce::canonicalize;
@@ -13,15 +16,6 @@ mod util;
 mod output;
 mod settings;
 mod project;
-
-//mod get_stats;
-//mod languages;
-//mod file_utils;
-//mod find_paths;
-//mod get_stats;
-//mod filter_paths;
-//mod remove_paths;
-//mod spinner;
 
 fn main() {
 
@@ -52,34 +46,34 @@ fn main() {
 		return;
 	}
 
-	analyse::analyse(cleanables, &settings);
+	let delete_dirs = analyse::analyse(cleanables, &settings);
 
-	// Get stats for the discovered projects
-//	let stats = get_stats::get(cleanables);
+	if delete_dirs.len() == 0 {
+		return;
+	}
 
-//	// Find the paths that should be removed
-//	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
-//
-//	// Verify paths to remove
-//	println!("Ready to remove {} of unnecessary files", format_size(remove_size).cyan().bold());
-//	println!("{}", "ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED".white().on_red().bold());
-//	for path in &remove { println!("    {}", path.display()); }
-//
-//	if !settings.force {
-//		loop {
-//			print!("Do you want to continue? (y/n) ");
-//			let _ = stdout().flush();
-//
-//			let mut input = String::new();
-//			stdin().read_line(&mut input).unwrap();
-//			let input = input.trim();
-//
-//			if input == "n" { return; }
-//			if input == "y" { break; }
-//			println!("  {}", "Please enter either 'y' or 'n'".yellow());
-//		}
-//	}
-//
-//	// Delete directories
-//	remove_paths::remove(remove);
+	output().main_delete_dirs_identified(&delete_dirs);
+	if !settings.force {
+		output().main_question();
+
+		loop {
+			output().main_question_continue();
+
+			let mut input = String::new();
+			stdin().read_line(&mut input).unwrap();
+			let input = input.trim();
+
+			if input == "n" { return; }
+			if input == "y" { break; }
+			output().main_question_illegal_answer();
+		}
+	}
+
+	// TODO multithread this
+	for dir in delete_dirs {
+		output().delete_path(&dir);
+		remove_dir_all(dir);
+	}
+
+	output().delete_complete();
 }

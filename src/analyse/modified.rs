@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -19,7 +20,7 @@ pub fn filter_by_modified(projects : SegQueue<Project>) -> SegQueue<Project> {
 	let old_projects = SegQueue::new();
 	let recent_projects = AtomicUsize::new(0);
 
-	process_queue(num_cpus::get() * 2,
+	process_queue(max(4, num_cpus::get()),
 		&projects,
 		|project| {
 			let paths = SegQueue::new();
@@ -27,7 +28,7 @@ pub fn filter_by_modified(projects : SegQueue<Project>) -> SegQueue<Project> {
 
 			find_modified_date(&project, project.root(), &paths, &modified);
 
-			process_queue(num_cpus::get() * 3,
+			process_queue(max(8, num_cpus::get() * 2),
 				&paths,
 				|path| {
 					output().analyse_filter_by_modified_path(&path);

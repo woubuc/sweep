@@ -11,12 +11,6 @@ pub struct Project {
 
 	/// Timestamp indicating when the project was last modified
 	last_modified : u64,
-
-	/// Total size of all source files
-	src_size : u64,
-
-	/// Total size of all dependency directories
-	dependency_size : u64,
 }
 
 impl Project {
@@ -28,10 +22,7 @@ impl Project {
 		Project {
 			root: root.into(),
 			dependency_dirs: Vec::new(),
-
 			last_modified: 0,
-			dependency_size: 0,
-			src_size: 0,
 		}
 	}
 
@@ -56,5 +47,10 @@ impl Project {
 	/// project
 	pub fn is_dependency_dir<P : Into<PathBuf>>(&self, path : P) -> bool {
 		return self.dependency_dirs.contains(&path.into());
+	}
+
+	/// Consumes the project and returns the dependency directories
+	pub fn into_dependency_dirs(self) -> Vec<PathBuf> {
+		self.dependency_dirs
 	}
 }

@@ -1,7 +1,7 @@
 //! Contains text formatting functions and output helpers to avoid having this formatting
 //! throughout all of the code
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crossterm::terminal;
 use colored::*; // TODO replace colored with crossterm colours
@@ -59,6 +59,35 @@ impl OutputManager {
 		}
 	}
 
+	pub fn main_delete_dirs_identified(&self, dirs : &Vec<PathBuf>) {
+		if self.colours {
+			self.println("Result".green().bold(), format!("Found {} unneeded directories", dirs.len()));
+		} else {
+			self.println("Result", format!("Found {} unneeded directories", dirs.len()));
+		}
+
+		for dir in dirs {
+			self.println_plain(dir.to_str().unwrap_or(""));
+		}
+	}
+
+	pub fn main_question(&self) {
+		if self.colours {
+			self.println("DANGER".on_red().white().bold(), format!("{}", "Above directories will be permanently deleted".red().bold()));
+		} else {
+			self.println("DANGER", "Above directories will be permanently deleted");
+		}
+	}
+
+	pub fn main_question_continue(&self) {
+		print!("{} Continue? (y/n): ", " ".repeat(LABEL_WIDTH));
+		let _ = stdout().flush();
+	}
+
+	pub fn main_question_illegal_answer(&self) {
+		self.println_plain("Please answer either 'y' or 'n'");
+	}
+
 	pub fn discover_searching_path(&self, path : &Path) {
 		if self.colours {
 			self.print("Searching".cyan().bold(), path.to_str().unwrap_or(""));
@@ -97,9 +126,9 @@ impl OutputManager {
 
 	pub fn analyse_filter_by_modified_skip(&self) {
 		if self.colours {
-			self.print("Skip".yellow().bold(), "--all flag set, skipping analysis");
+			self.println("Skip".yellow().bold(), "--all flag set, skipping analysis");
 		} else {
-			self.print("Skip", "--all flag set, skipping analysis");
+			self.println("Skip", "--all flag set, skipping analysis");
 		}
 	}
 
@@ -163,41 +192,57 @@ impl OutputManager {
 		}
 	}
 
+	pub fn delete_path(&self, dir : &Path) {
+		if self.colours {
+			self.print("Deleting".cyan().bold(), dir.to_str().unwrap_or(""));
+		} else {
+			self.print("Deleting", dir.to_str().unwrap_or(""));
+		}
+	}
+
+	pub fn delete_complete(&self) {
+		if self.colours {
+			self.print("Deleted".green().bold(), "All directories deleted");
+		} else {
+			self.print("Deleted", "All directories deleted");
+		}
+	}
+
 
 	fn print<L : Into<ColoredString>, S : Into<String>>(&self, label : L, message : S) {
 		let message = self.shorten(message.into());
 		let label = label.into();
 
 		print!("{}{} {}{}\r",
-				 " ".repeat(LABEL_WIDTH - label.len()),
-				 label,
+			   " ".repeat(LABEL_WIDTH - label.len()),
+			   label,
+			   message,
+			   " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
+		);
+
+		let _ = stdout().flush();
+	}
+
+	fn print_plain<S : Into<String>>(&self, message : S) {
+		let message = self.shorten(message.into());
+
+		print!("{} {}{}",
+				 " ".repeat(LABEL_WIDTH),
 				 message,
-				" ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
+				 " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
 		);
 
 		let _ = stdout().flush();
 	}
 
 	fn println<L : Into<ColoredString>,S : Into<String>>(&self, label : L, message : S) {
-		let message = self.shorten(message.into());
-		let label = label.into();
-
-		println!("{}{} {}{}",
-			   " ".repeat(LABEL_WIDTH - label.len()),
-			   label,
-			   message,
-			   " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
-		);
+		self.print(label, message);
+		println!();
 	}
 
 	fn println_plain<S : Into<String>>(&self, message : S) {
-		let message = self.shorten(message.into());
-
-		println!("{} {}{}",
-				 " ".repeat(LABEL_WIDTH),
-				 message,
-				 " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
-		);
+		self.print_plain(message);
+		println!();
 	}
 
 	/// Shortens a message by omitting the middle part and replacing it with '...'

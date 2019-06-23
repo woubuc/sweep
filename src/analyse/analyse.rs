@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crossbeam::queue::SegQueue;
 
 use crate::output::output;
@@ -6,7 +8,7 @@ use crate::settings::Settings;
 
 use super::modified::filter_by_modified;
 
-pub fn analyse(projects : SegQueue<Project>, settings : &Settings) {
+pub fn analyse(projects : SegQueue<Project>, settings : &Settings) -> Vec<PathBuf> {
 
 	let filtered = if settings.all {
 		output().analyse_filter_by_modified_skip();
@@ -17,16 +19,14 @@ pub fn analyse(projects : SegQueue<Project>, settings : &Settings) {
 
 	if filtered.len() == 0 {
 		output().analyse_no_old_cleanables();
-		return;
+		return Vec::new();
 	}
 
-//	let delete_dirs = find_dirs(cleanables, settings);
-//
-//	output().analyse_processing_done(delete_dirs.len());
-//
-//	while let Ok(p) = delete_dirs.pop() {
-//		println!("{:?}", p);
-//	}
+	let mut dirs = Vec::new();
+	while let Ok(project) = filtered.pop() {
+		dirs.append(&mut project.into_dependency_dirs());
+	}
 
-//	return delete_dirs;
+	dirs.sort();
+	return dirs;
 }
