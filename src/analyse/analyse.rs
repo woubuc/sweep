@@ -8,7 +8,12 @@ use super::modified::filter_by_modified;
 
 pub fn analyse(projects : SegQueue<Project>, settings : &Settings) {
 
-	let filtered = filter_by_modified(projects);
+	let filtered = if settings.all {
+		output().analyse_filter_by_modified_skip();
+		projects
+	} else {
+		filter_by_modified(projects)
+	};
 
 	if filtered.len() == 0 {
 		output().analyse_no_old_cleanables();

@@ -95,6 +95,14 @@ impl OutputManager {
 		self.println_plain(format!("{} cleanable projects found", discovered));
 	}
 
+	pub fn analyse_filter_by_modified_skip(&self) {
+		if self.colours {
+			self.print("Skip".yellow().bold(), "--all flag set, skipping analysis");
+		} else {
+			self.print("Skip", "--all flag set, skipping analysis");
+		}
+	}
+
 	pub fn analyse_filter_by_modified_path(&self, path : &Path) {
 		if self.colours {
 			self.print("Analysing".cyan().bold(), path.to_str().unwrap_or(""));
