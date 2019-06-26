@@ -6,7 +6,7 @@ version = "0.5.3"
 
 description = "CLI tool to clean up and remove old generated code in your Rust, Javascript and Java projects"
 repository = "https://github.com/woubuc/project-cleanup"
-authors = ["Wouter Buckens <wouter@epicteddy.com> (https://www.woubuc.be)"]
+authors = ["Wouter Buckens <wouter@epicteddy.com> (www.woubuc.be)"]
 
 readme = "README.md"
 license = "MIT"
@@ -18,3 +18,4 @@ categories = ["command-line-utilities"]
 colored = "1.8.0"
 humansize = "1.1.0"
 regex = "1.1.6"
+structopt = "0.2.16"

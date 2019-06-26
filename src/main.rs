@@ -1,9 +1,10 @@
+use std::path::PathBuf;
+use regex::Regex;
 use std::io::{ stdin, stdout, Write };
-use std::process;
 
 use colored::*;
+use structopt::StructOpt;
 
-mod settings;
 mod languages;
 mod file_utils;
 mod find_paths;
@@ -12,10 +13,28 @@ mod filter_paths;
 mod remove_paths;
 mod spinner;
 
-use crate::settings::Settings;
 use crate::get_stats::format_size;
 
 fn main() {
+
+	/// Clean up build artifacts and dependency directories in Rust, Java and NodeJS projects to free up disk space.  
+	///
+	/// Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues
+	#[derive(Debug,StructOpt)]
+	pub struct Settings {
+		/// Paths where potential cleanup candidates are located
+		#[structopt(name = "PATH...", help = "One or more directories where the project-cleanup should start searching for projects. Defaults to current working directory")]
+		pub paths : Vec<PathBuf>,
+		/// Remove even if project was touched recently (within the last month).
+		#[structopt(short = "a", long = "all", help = "Cleanup even recently used projects")]
+		pub all : bool,
+		/// Exclude projects in directories matched by this regex
+		#[structopt(short = "i", long = "ignore", help = "Regex to specify project directories to be ignored")]
+		pub ignore : Option<Regex>,
+		/// Skip confirmation before removal
+		#[structopt(short = "f", long = "force", help = "Skip confirmation prompt")]
+		pub force : bool
+	}
 
 	// If on Windows, we need to enable the virtual terminal
 	// to allow for proper colour support. Other platforms should
@@ -23,14 +42,12 @@ fn main() {
 	#[cfg(windows)]
 	colored::control::set_virtual_terminal(true).expect("Could not initialise virtual terminal");
 
-	println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
-
 	// Parse CLI settings
-	let settings = match Settings::from_args(std::env::args()) {
-		settings::ParseResult::Ok(settings) => settings,
-		settings::ParseResult::Done => return,
-		settings::ParseResult::Errored => process::exit(1),
-	};
+	let mut settings = Settings::from_args();
+	// Check if we need to include the working directory because no path was provided
+	if settings.paths.is_empty(){
+	settings.paths.push(".".into())
+	}
 
 	// Find the project paths
 	let paths = find_paths::find(settings.paths, settings.ignore);
