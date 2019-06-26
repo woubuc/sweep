@@ -4,29 +4,54 @@ use std::io::stdin;
 use std::process;
 
 use dunce::canonicalize;
+use structopt::StructOpt;
 
 pub use crate::output::output;
 pub use crate::project::Project;
-use crate::settings::Settings;
+use std::path::PathBuf;
+use regex::Regex;
 
 mod analyse;
 mod find;
 mod util;
 
 mod output;
-mod settings;
 mod project;
+
+/// Clean up build artifacts and dependency directories in Rust, Java and NodeJS projects to free up disk space.
+///
+/// Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues
+#[derive(Debug,StructOpt)]
+pub struct Settings {
+	/// One or more directories where the project-cleanup should start searching for projects.
+	/// Defaults to the current working directory if no paths are given.
+	#[structopt(name = "PATH...")]
+	pub paths : Vec<PathBuf>,
+
+	/// Cleanup even projects that were modified within the last 30 days.
+	#[structopt(short = "a", long = "all")]
+	pub all : bool,
+
+	/// Exclude projects in directories matched by this regex pattern
+	#[structopt(short = "i", long = "ignore")]
+	pub ignore : Option<Regex>,
+
+	/// Skip confirmation prompt before removing directories
+	#[structopt(short = "f", long = "force")]
+	pub force : bool
+}
 
 fn main() {
 
 	output().main_title();
 
 	// Parse CLI settings
-	let mut settings = match Settings::from_args(std::env::args()) {
-		settings::ParseResult::Ok(settings) => settings,
-		settings::ParseResult::Done => return,
-		settings::ParseResult::Errored => process::exit(1),
-	};
+	let mut settings = Settings::from_args();
+
+	// Check if we need to include the working directory because no path was provided
+	if settings.paths.is_empty(){
+		settings.paths.push(".".into());
+	}
 
 	// Resolve to absolute paths - TODO move this into settings
 	settings.paths = settings.paths.iter()

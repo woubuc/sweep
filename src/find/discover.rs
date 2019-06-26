@@ -5,7 +5,7 @@ use crossbeam::queue::SegQueue;
 
 use crate::output;
 use crate::Project;
-use crate::settings::Settings;
+use crate::Settings;
 use crate::util::process_queue;
 
 use super::identify::identify_cleanable_project;
@@ -50,7 +50,7 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 		if let Some(project) = identify_cleanable_project(&path) {
 			discovered.push(project);
 		} else {
-			discover_in_directory(path, &settings, &path_queue, &discovered);
+			discover_in_directory(&path, &settings, &path_queue, &discovered);
 		}
 	}
 

@@ -4,7 +4,7 @@ use crossbeam::queue::SegQueue;
 
 use crate::output::output;
 use crate::Project;
-use crate::settings::Settings;
+use crate::Settings;
 
 use super::modified::filter_by_modified;
 
