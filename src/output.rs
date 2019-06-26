@@ -3,10 +3,10 @@
 
 use std::path::{Path, PathBuf};
 
-use crossterm::terminal;
-use colored::*; // TODO replace colored with crossterm colours
+use crossterm::{ terminal, Colored, Color, Attribute };
 use lazy_static::lazy_static;
 use std::io::{stdout, Write};
+use std::fmt::Display;
 
 lazy_static! {
 	static ref OUTPUT_MANAGER : OutputManager = OutputManager::create();
@@ -17,7 +17,6 @@ pub fn output() -> &'static OutputManager { &OUTPUT_MANAGER }
 const LABEL_WIDTH : usize = 12;
 
 pub struct OutputManager {
-	colours : bool,
 	term_width : usize
 }
 
@@ -26,197 +25,121 @@ pub struct OutputManager {
 impl OutputManager {
 	fn create() -> OutputManager {
 		OutputManager {
-			colours: try_init_colours(),
 			term_width: get_term_width(),
 		}
 	}
 
 	pub fn main_title(&self) {
-		if self.colours {
-			println!("{}", format!("Project Cleanup v{}", env!("CARGO_PKG_VERSION")).as_str().bold());
-		} else {
-			println!("Project Cleanup v{}", env!("CARGO_PKG_VERSION"));
-		}
+		println!("{}Project Cleanup v{}{}", Attribute::Bold, env!("CARGO_PKG_VERSION"), Attribute::Reset);
 	}
 
-	pub fn main_input_path(&self, path : &Path) {
-		if self.colours {
-			self.println("Path".blue(), path.to_str().unwrap_or(""));
-		} else {
-			self.println("Path", path.to_str().unwrap_or(""));
-		}
+	pub fn settings_path(&self, path : &Path) {
+		self.println("Path", Color::Blue, path.to_str().unwrap_or(""));
 	}
 
-	pub fn main_no_cleanables_found(&self) {
-		if self.colours {
-			println!("{}", "No cleanable directories found".yellow());
-			println!("  Check your paths and try again.");
-			println!("  See `{}` for more options", "--help".bold());
-		} else {
-			println!("No cleanable directories found");
-			println!("  Check your paths and try again.");
-			println!("  See `--help` for more options");
-		}
+	pub fn main_no_cleanable_projects(&self) {
+		println!("{}", wrap_style("No cleanable projects found", Colored::Fg(Color::Yellow)));
+		println!("  Check your paths and try again.");
+		println!("  See `{}` for more options", wrap_style("--help", Attribute::Bold));
 	}
 
-	pub fn main_delete_dirs_identified(&self, dirs : &Vec<PathBuf>) {
-		if self.colours {
-			self.println("Result".green().bold(), format!("Found {} unneeded directories", dirs.len()));
-		} else {
-			self.println("Result", format!("Found {} unneeded directories", dirs.len()));
-		}
+	pub fn main_no_deletable_directories(&self) {
+		println!("{}", wrap_style("No cleanable directories found", Colored::Fg(Color::Yellow)));
+		println!("  This is likely because your projects were recently modified");
+		println!("  Run the application with `{}` to disregard file age", wrap_style("--all", Attribute::Bold));
+		println!("  Try `{}` for more options", wrap_style("--help", Attribute::Bold));
+	}
+
+	pub fn main_directories_list(&self, dirs : &Vec<PathBuf>) {
+		self.println("Result", Color::Green, &format!("Found {} deletable directories", dirs.len()));
 
 		for dir in dirs {
 			self.println_plain(dir.to_str().unwrap_or(""));
 		}
 	}
 
-	pub fn main_question(&self) {
-		if self.colours {
-			self.println("DANGER".on_red().white().bold(), format!("{}", "Above directories will be permanently deleted".red().bold()));
-		} else {
-			self.println("DANGER", "Above directories will be permanently deleted");
-		}
+	pub fn main_delete(&self) {
+		self.println(wrap_style("DANGER", Colored::Bg(Color::Red)),
+					 Color::White,
+					 wrap_style("Above directories will be permanently deleted", Colored::Fg(Color::Red)));
 	}
 
-	pub fn main_question_continue(&self) {
+	pub fn main_delete_question(&self) {
 		print!("{} Continue? (y/n): ", " ".repeat(LABEL_WIDTH));
 		let _ = stdout().flush();
 	}
 
-	pub fn main_question_illegal_answer(&self) {
+	pub fn main_delete_invalid_answer(&self) {
 		self.println_plain("Please answer either 'y' or 'n'");
 	}
 
 	pub fn discover_searching_path(&self, path : &Path) {
-		if self.colours {
-			self.print("Searching".cyan().bold(), path.to_str().unwrap_or(""));
-		} else {
-			self.print("Searching", path.to_str().unwrap_or(""));
-		}
+		self.print("Searching", Color::Cyan, path.to_str().unwrap_or(""));
 	}
 
 	pub fn discover_searching_retry(&self, tries : usize) {
-		if self.colours {
-			self.print("Searching".cyan().bold(), ".".repeat(tries));
-		} else {
-			self.print("Searching", ".".repeat(tries));
-		}
+		self.print("Searching", Color::Cyan, &".".repeat(tries));
 	}
 
 	pub fn discover_searching_error(&self, error : &str, path : &Path) {
-		if self.colours {
-			self.println("Error".red().bold(), error);
-		} else {
-			self.println("Error", error);
-		}
-
+		self.println("Error", Color::Red, error);
 		self.println_plain(path.to_str().unwrap_or(""));
 	}
 
 	pub fn discover_searching_done(&self, total_paths : usize, discovered : usize) {
-		if self.colours {
-			self.println("Searched".green().bold(), format!("{} directories searched", total_paths));
-		} else {
-			self.println("Searched", format!("{} directories searched", total_paths));
-		}
-
+		self.println("Searched", Color::Green, &format!("{} directories searched", total_paths));
 		self.println_plain(format!("{} cleanable projects found", discovered));
 	}
 
 	pub fn analyse_filter_by_modified_skip(&self) {
-		if self.colours {
-			self.println("Skip".yellow().bold(), "--all flag set, skipping analysis");
-		} else {
-			self.println("Skip", "--all flag set, skipping analysis");
-		}
+		self.println("Skip", Color::Yellow, "--all flag set, skipping analysis");
 	}
 
 	pub fn analyse_filter_by_modified_path(&self, path : &Path) {
-		if self.colours {
-			self.print("Analysing".cyan().bold(), path.to_str().unwrap_or(""));
-		} else {
-			self.print("Analysing", path.to_str().unwrap_or(""));
-		}
+		self.print("Analysing", Color::Cyan, path.to_str().unwrap_or(""));
 	}
 
 	pub fn analyse_filter_by_modified_retry(&self, tries : usize) {
-		if self.colours {
-			self.print("Analysing".cyan().bold(), ".".repeat(tries));
-		} else {
-			self.print("Analysing", ".".repeat(tries));
-		}
+		self.print("Analysing", Color::Cyan, &".".repeat(tries));
 	}
 
 	pub fn analyse_filter_by_modified_done(&self, old_projects : usize, recent_projects : usize) {
-		if self.colours {
-			if recent_projects == 0 {
-				self.println("Analysed".green().bold(), "All projects can be cleaned");
-			} else if old_projects == 0 {
-				self.println("Analysed".green().bold(), "All projects have been modified recently");
-			} else {
-				self.println("Analysed".green().bold(), format!("{} of {} projects can be cleaned", old_projects, old_projects + recent_projects));
-				self.println_plain(format!("{} projects have been modified recently", recent_projects));
-			}
+		if recent_projects == 0 {
+			self.println("Analysed", Color::Green, "All projects can be cleaned");
+		} else if old_projects == 0 {
+			self.println("Analysed", Color::Green, "All projects have been modified recently");
 		} else {
-			if recent_projects == 0 {
-				self.println("Analysed", "All projects can be cleaned");
-			} else if old_projects == 0 {
-				self.println("Analysed", "All projects have been modified recently");
-			} else {
-				self.println("Analysed", format!("{} of {} projects can be cleaned", old_projects, old_projects + recent_projects));
-				self.println_plain(format!("{} projects have been modified recently", recent_projects));
-			}
-		}
-	}
-
-	pub fn analyse_no_old_cleanables(&self) {
-		if self.colours {
-			println!("{}", "No cleanable directories found".yellow());
-			println!("  This is likely because your projects were recently modified");
-			println!("  Run the application with `{}` to disregard file age", "--all".bold());
-			println!("  Try `{}` for more options", "--help".bold());
-		} else {
-			println!("No cleanable directories found");
-			println!("  This is likely because your projects were recently modified");
-			println!("  Run the application with `--all` to disregard file age");
-			println!("  Try `--help` for more options");
+			self.println("Analysed", Color::Green, &format!("{} of {} projects can be cleaned", old_projects, old_projects + recent_projects));
+			self.println_plain(format!("{} projects have been modified recently", recent_projects));
 		}
 	}
 
 	pub fn analyse_processing_done(&self, discovered : usize) {
-		if self.colours {
-			self.println("Analysed".green().bold(), format!("{} unnecessary directories found in projects", discovered));
-		} else {
-			self.println("Analysed", format!("{} unnecessary directories found in projects", discovered));
-		}
+		self.println("Analysed", Color::Green, &format!("{} unnecessary directories found in projects", discovered));
 	}
 
 	pub fn delete_path(&self, dir : &Path) {
-		if self.colours {
-			self.print("Deleting".cyan().bold(), dir.to_str().unwrap_or(""));
-		} else {
-			self.print("Deleting", dir.to_str().unwrap_or(""));
-		}
+		self.print("Deleting", Color::Cyan, dir.to_str().unwrap_or(""));
 	}
 
 	pub fn delete_complete(&self) {
-		if self.colours {
-			self.print("Deleted".green().bold(), "All directories deleted");
-		} else {
-			self.print("Deleted", "All directories deleted");
-		}
+		self.print("Deleted", Color::Green, "All directories deleted");
 	}
 
 
-	fn print<L : Into<ColoredString>, S : Into<String>>(&self, label : L, message : S) {
-		let message = self.shorten(message.into());
+	fn print<S : Into<String>>(&self, label : S, label_colour : Color, message : S) {
+		let message = message.into();
 		let label = label.into();
 
-		print!("{}{} {}{}\r",
+		print!("{}{}{}{} {}{}\r",
 			   " ".repeat(LABEL_WIDTH - label.len()),
+
+			   Colored::Fg(label_colour),
 			   label,
+			   Attribute::Reset,
+
 			   message,
+
 			   " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
 		);
 
@@ -226,7 +149,7 @@ impl OutputManager {
 	fn print_plain<S : Into<String>>(&self, message : S) {
 		let message = self.shorten(message.into());
 
-		print!("{} {}{}",
+		print!("{} {}{}\r",
 				 " ".repeat(LABEL_WIDTH),
 				 message,
 				 " ".repeat(self.term_width - LABEL_WIDTH - 1 - message.len())
@@ -235,8 +158,8 @@ impl OutputManager {
 		let _ = stdout().flush();
 	}
 
-	fn println<L : Into<ColoredString>,S : Into<String>>(&self, label : L, message : S) {
-		self.print(label, message);
+	fn println<S : Into<String>>(&self, label : S, label_colour : Color, message : S) {
+		self.print(label, label_colour, message);
 		println!();
 	}
 
@@ -273,17 +196,11 @@ fn get_term_width() -> usize {
 	return term_width as usize;
 }
 
-
-#[cfg(windows)]
-fn try_init_colours() -> bool {
-	// On Windows, we need to enable the virtual terminal
-	// to allow for proper colour support. Other platforms
-	// should support ansi colouring without a problem.
-	match colored::control::set_virtual_terminal(true) {
-		Ok(_) => true,
-		Err(_) => false,
-	}
+/// Wraps a string in the given style attribute
+///
+/// # Arguments
+/// `message` - Message to wrap
+/// `style`   - Style attribute to apply
+fn wrap_style<D : Display, S : AsRef<str> + Display>(message : S, style : D) -> String {
+	format!("{}{}{}", style, message, Attribute::Reset)
 }
-
-#[cfg(not(windows))]
-fn try_init_colours() -> bool { true }

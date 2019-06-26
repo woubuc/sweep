@@ -18,7 +18,6 @@ pub fn analyse(projects : SegQueue<Project>, settings : &Settings) -> Vec<PathBu
 	};
 
 	if filtered.len() == 0 {
-		output().analyse_no_old_cleanables();
 		return Vec::new();
 	}
 

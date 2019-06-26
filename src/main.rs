@@ -1,15 +1,13 @@
-use core::borrow::Borrow;
 use std::fs::remove_dir_all;
 use std::io::stdin;
-use std::process;
+use std::path::PathBuf;
 
 use dunce::canonicalize;
+use regex::Regex;
 use structopt::StructOpt;
 
 pub use crate::output::output;
 pub use crate::project::Project;
-use std::path::PathBuf;
-use regex::Regex;
 
 mod analyse;
 mod find;
@@ -41,48 +39,55 @@ pub struct Settings {
 	pub force : bool
 }
 
-fn main() {
+impl Settings {
+	pub fn get() -> Settings {
+		// Explicit declaration because type hinting in IDEA doesn't know `from_args`
+		let mut settings : Settings = Settings::from_args();
 
+		if settings.paths.is_empty(){
+			settings.paths.push(".".into());
+		}
+
+		// Resolve to absolute paths
+		settings.paths = settings.paths.iter()
+								 .map(|p| canonicalize(p).expect("Cannot resolve to absolute path")) // TODO improve error handling
+								 .collect();
+
+		for path in &settings.paths {
+			output().settings_path(&path);
+		}
+
+		return settings;
+	}
+}
+
+fn main() {
 	output().main_title();
 
-	// Parse CLI settings
-	let mut settings = Settings::from_args();
+	let settings = Settings::get();
 
-	// Check if we need to include the working directory because no path was provided
-	if settings.paths.is_empty(){
-		settings.paths.push(".".into());
-	}
-
-	// Resolve to absolute paths - TODO move this into settings
-	settings.paths = settings.paths.iter()
-		.map(|p| canonicalize(p).expect("Cannot resolve to absolute path"))
-		.collect();
-
-	// Display resolved paths to user
-	for path in &settings.paths {
-		output().main_input_path(path);
-	}
-
-	// Discover cleanable directories
+	// Discover cleanable projects
 	let cleanables = find::discover(&settings);
 
 	if cleanables.len() == 0 {
-		output().main_no_cleanables_found();
+		output().main_no_cleanable_projects();
 		return;
 	}
 
+	// Figure out which directories can be deleted
 	let delete_dirs = analyse::analyse(cleanables, &settings);
 
 	if delete_dirs.len() == 0 {
+		output().main_no_deletable_directories();
 		return;
 	}
 
-	output().main_delete_dirs_identified(&delete_dirs);
+	output().main_directories_list(&delete_dirs);
 	if !settings.force {
-		output().main_question();
+		output().main_delete();
 
 		loop {
-			output().main_question_continue();
+			output().main_delete_question();
 
 			let mut input = String::new();
 			stdin().read_line(&mut input).unwrap();
@@ -90,14 +95,14 @@ fn main() {
 
 			if input == "n" { return; }
 			if input == "y" { break; }
-			output().main_question_illegal_answer();
+			output().main_delete_invalid_answer();
 		}
 	}
 
 	// TODO multithread this
 	for dir in delete_dirs {
 		output().delete_path(&dir);
-		remove_dir_all(dir);
+		remove_dir_all(dir).expect("Could not remove directory"); // TODO better error handling
 	}
 
 	output().delete_complete();

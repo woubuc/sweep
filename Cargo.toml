@@ -15,9 +15,8 @@ keywords = ["cleanup", "project", "clean", "delete", "free"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-colored = "1.8.0"
 crossbeam = "0.7.1"
-crossterm = { version="0.9.6", default-features = false, features = ["terminal"] }
+crossterm = { version="0.9.6", default-features = false, features = ["terminal", "style"] }
 dunce = "1.0.0"
 humansize = "1.1.0"
 lazy_static = "1.3.0"
