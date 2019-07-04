@@ -128,7 +128,7 @@ impl OutputManager {
 
 
 	fn print<S : Into<String>>(&self, label : S, label_colour : Color, message : S) {
-		let message = message.into();
+		let message = self.shorten(message.into());
 		let label = label.into();
 
 		print!("{}{}{}{} {}{}\r",
