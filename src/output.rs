@@ -29,20 +29,25 @@ impl OutputManager {
 		}
 	}
 
+	/// The title of the application
 	pub fn main_title(&self) {
 		println!("{}Project Cleanup v{}{}", Attribute::Bold, env!("CARGO_PKG_VERSION"), Attribute::Reset);
 	}
 
+	/// A path as configured through CLI arguments
 	pub fn settings_path(&self, path : &Path) {
 		self.println("Path", Color::Blue, path.to_str().unwrap_or(""));
 	}
 
+	/// Info message when there are no cleanable projects found
 	pub fn main_no_cleanable_projects(&self) {
 		println!("{}", wrap_style("No cleanable projects found", Colored::Fg(Color::Yellow)));
 		println!("  Check your paths and try again.");
 		println!("  See `{}` for more options", wrap_style("--help", Attribute::Bold));
 	}
 
+	/// Info message when there are cleanable projects found,
+	/// but none of them have deletable directories
 	pub fn main_no_deletable_directories(&self) {
 		println!("{}", wrap_style("No cleanable directories found", Colored::Fg(Color::Yellow)));
 		println!("  This is likely because your projects were recently modified");
@@ -50,6 +55,7 @@ impl OutputManager {
 		println!("  Try `{}` for more options", wrap_style("--help", Attribute::Bold));
 	}
 
+	/// Displays a list of found directories that can be deleted
 	pub fn main_directories_list(&self, dirs : &Vec<PathBuf>) {
 		self.println("Result", Color::Green, &format!("Found {} deletable directories", dirs.len()));
 
@@ -58,12 +64,14 @@ impl OutputManager {
 		}
 	}
 
+	/// Shows a warning before deleting deletable directories
 	pub fn main_delete(&self) {
 		self.println(wrap_style("DANGER", Colored::Bg(Color::Red)),
 					 Color::White,
 					 wrap_style("Above directories will be permanently deleted", Colored::Fg(Color::Red)));
 	}
 
+	/// Asks the user if he wants to continue and actually delete files
 	pub fn main_delete_question(&self) {
 		print!("{} Continue? (y/n): ", " ".repeat(LABEL_WIDTH));
 		let _ = stdout().flush();
