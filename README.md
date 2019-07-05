@@ -1,4 +1,5 @@
 [![Project Cleanup](./readme_logo.png)](https://woubuc.github.io/project-cleanup/)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwoubuc%2Fproject-cleanup.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwoubuc%2Fproject-cleanup?ref=badge_shield)
 
 [![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
@@ -37,3 +38,6 @@ directories in already added languages.
 ## License
 Everything in this repository is published under the MIT license. See
 the LICENSE file for more information.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwoubuc%2Fproject-cleanup.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwoubuc%2Fproject-cleanup?ref=badge_large)
