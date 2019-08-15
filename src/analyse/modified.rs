@@ -20,7 +20,7 @@ pub fn filter_by_modified(projects : SegQueue<Project>) -> SegQueue<Project> {
 	let old_projects = SegQueue::new();
 	let recent_projects = AtomicUsize::new(0);
 
-	process_queue(max(4, num_cpus::get()),
+	process_queue(max(2, num_cpus::get()),
 		&projects,
 		|project| {
 			let paths = SegQueue::new();

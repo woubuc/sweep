@@ -59,15 +59,14 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 		return discovered;
 	}
 
-	// I've set the number of threads to spawn to six times the CPU cores
-	// because at this point the balance between read speed and CPU usage
-	// seemed to be most ideal in my very limited tests with a quad-core
-	// (8 threads) CPU on an SSD. My HDD caps out at 100% read speed with
-	// just a few threads, so it doesn't make much of a difference there.
-	// Real-world tests and experience may give different results and the
-	// number of threads may need to be adjusted later on.
+	// I've set the number of threads to spawn to twice the number of CPU
+	// cores available, but this is not based on any real insights, rather
+	// this is an assumption of what might be a good balance between read
+	// speed, disk usage and CPU usage. Real-world tests and experience may
+	// give different results and the number of threads may need to be
+	// adjusted later on.
 	process_queue(
-		max(12, num_cpus::get() * 6),
+		max(8, num_cpus::get() * 2),
 		&path_queue,
 		|path| {
 			output().discover_searching_path(&path);

@@ -36,7 +36,7 @@ pub struct Settings {
 
 	/// Skip confirmation prompt before removing directories
 	#[structopt(short = "f", long = "force")]
-	pub force : bool
+	pub force : bool,
 }
 
 impl Settings {
@@ -99,7 +99,6 @@ fn main() {
 		}
 	}
 
-	// TODO multithread this
 	for dir in delete_dirs {
 		output().delete_path(&dir);
 		remove_dir_all(dir).expect("Could not remove directory"); // TODO better error handling
