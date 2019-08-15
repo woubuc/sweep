@@ -1,72 +1,93 @@
+use std::fs::remove_dir_all;
+use std::io::stdin;
 use std::path::PathBuf;
-use regex::Regex;
-use std::io::{ stdin, stdout, Write };
 
-use colored::*;
+use dunce::canonicalize;
+use regex::Regex;
 use structopt::StructOpt;
 
-mod languages;
-mod file_utils;
-mod find_paths;
-mod get_stats;
-mod filter_paths;
-mod remove_paths;
-mod spinner;
+pub use crate::output::output;
+pub use crate::project::Project;
 
-use crate::get_stats::format_size;
+mod analyse;
+mod find;
+mod util;
+
+mod output;
+mod project;
+
+/// Clean up build artifacts and dependency directories in Rust, Java and NodeJS projects to free up disk space.
+///
+/// Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues
+#[derive(Debug,StructOpt)]
+pub struct Settings {
+	/// One or more directories where the project-cleanup should start searching for projects.
+	/// Defaults to the current working directory if no paths are given.
+	#[structopt(name = "PATH...")]
+	pub paths : Vec<PathBuf>,
+
+	/// Cleanup even projects that were modified within the last 30 days.
+	#[structopt(short = "a", long = "all")]
+	pub all : bool,
+
+	/// Exclude projects in directories matched by this regex pattern
+	#[structopt(short = "i", long = "ignore")]
+	pub ignore : Option<Regex>,
+
+	/// Skip confirmation prompt before removing directories
+	#[structopt(short = "f", long = "force")]
+	pub force : bool,
+}
+
+impl Settings {
+	pub fn get() -> Settings {
+		// Explicit declaration because type hinting in IDEA doesn't know `from_args`
+		let mut settings : Settings = Settings::from_args();
+
+		if settings.paths.is_empty(){
+			settings.paths.push(".".into());
+		}
+
+		// Resolve to absolute paths
+		settings.paths = settings.paths.iter()
+								 .map(|p| canonicalize(p).expect("Cannot resolve to absolute path")) // TODO improve error handling
+								 .collect();
+
+		for path in &settings.paths {
+			output().settings_path(&path);
+		}
+
+		return settings;
+	}
+}
 
 fn main() {
+	output().main_title();
 
-	/// Clean up build artifacts and dependency directories in Rust, Java and NodeJS projects to free up disk space.  
-	///
-	/// Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues
-	#[derive(Debug,StructOpt)]
-	pub struct Settings {
-		/// Paths where potential cleanup candidates are located
-		#[structopt(name = "PATH...", help = "One or more directories where the project-cleanup should start searching for projects. Defaults to current working directory")]
-		pub paths : Vec<PathBuf>,
-		/// Remove even if project was touched recently (within the last month).
-		#[structopt(short = "a", long = "all", help = "Cleanup even recently used projects")]
-		pub all : bool,
-		/// Exclude projects in directories matched by this regex
-		#[structopt(short = "i", long = "ignore", help = "Regex to specify project directories to be ignored")]
-		pub ignore : Option<Regex>,
-		/// Skip confirmation before removal
-		#[structopt(short = "f", long = "force", help = "Skip confirmation prompt")]
-		pub force : bool
+	let settings = Settings::get();
+
+	// Discover cleanable projects
+	let cleanables = find::discover(&settings);
+
+	if cleanables.len() == 0 {
+		output().main_no_cleanable_projects();
+		return;
 	}
 
-	// If on Windows, we need to enable the virtual terminal
-	// to allow for proper colour support. Other platforms should
-	// support ansi colouring without a problem.
-	#[cfg(windows)]
-	colored::control::set_virtual_terminal(true).expect("Could not initialise virtual terminal");
+	// Figure out which directories can be deleted
+	let delete_dirs = analyse::analyse(cleanables, &settings);
 
-	// Parse CLI settings
-	let mut settings = Settings::from_args();
-	// Check if we need to include the working directory because no path was provided
-	if settings.paths.is_empty(){
-	settings.paths.push(".".into())
+	if delete_dirs.len() == 0 {
+		output().main_no_deletable_directories();
+		return;
 	}
 
-	// Find the project paths
-	let paths = find_paths::find(settings.paths, settings.ignore);
-
-	// Get stats for the discovered projects
-	let stats = get_stats::get(paths);
-
-	// Find the paths that should be removed
-	let (remove, remove_size) = filter_paths::filter(stats, settings.all);
-
-	// Verify paths to remove
-	println!("Ready to remove {} of unnecessary files", format_size(remove_size).cyan().bold());
-	println!("{}", "ALL CONTENTS OF THESE DIRECTORIES WILL BE DELETED".white().on_red().bold());
-	for path in &remove { println!("    {}", path.display()); }
-
+	output().main_directories_list(&delete_dirs);
 	if !settings.force {
+		output().main_delete();
+
 		loop {
-			print!("Do you want to continue? (y/n) ");
-			let _ = stdout().flush();
+			output().main_delete_question();
 
 			let mut input = String::new();
 			stdin().read_line(&mut input).unwrap();
@@ -74,10 +95,14 @@ fn main() {
 
 			if input == "n" { return; }
 			if input == "y" { break; }
-			println!("  {}", "Please enter either 'y' or 'n'".yellow());
+			output().main_delete_invalid_answer();
 		}
 	}
 
-	// Delete directories
-	remove_paths::remove(remove);
+	for dir in delete_dirs {
+		output().delete_path(&dir);
+		remove_dir_all(dir).expect("Could not remove directory"); // TODO better error handling
+	}
+
+	output().delete_complete();
 }
