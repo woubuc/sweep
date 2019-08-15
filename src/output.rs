@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crossterm::{ terminal, Colored, Color, Attribute };
 use lazy_static::lazy_static;
-use std::io::{stdout, Write};
+use std::io::{ stdout, Write };
 use std::fmt::Display;
 
 lazy_static! {
@@ -19,8 +19,6 @@ const LABEL_WIDTH : usize = 12;
 pub struct OutputManager {
 	term_width : usize
 }
-
-// TODO find a better solution for lacking colour support than having every output line twice in here
 
 impl OutputManager {
 	fn create() -> OutputManager {
@@ -57,7 +55,13 @@ impl OutputManager {
 
 	/// Displays a list of found directories that can be deleted
 	pub fn main_directories_list(&self, dirs : &Vec<PathBuf>) {
-		self.println("Result", Color::Green, &format!("Found {} deletable directories", dirs.len()));
+		let message = if dirs.len() == 1 {
+			format!("Found 1 directory that can be deleted:")
+		} else {
+			format!("Found {} directories that can be deleted:", dirs.len())
+		};
+
+		self.println("Result", Color::Green, &message);
 
 		for dir in dirs {
 			self.println_plain(dir.to_str().unwrap_or(""));
@@ -66,9 +70,17 @@ impl OutputManager {
 
 	/// Shows a warning before deleting deletable directories
 	pub fn main_delete(&self) {
-		self.println(wrap_style("DANGER", Colored::Bg(Color::Red)),
-					 Color::White,
-					 wrap_style("Above directories will be permanently deleted", Colored::Fg(Color::Red)));
+		println!("{}{}{} DANGER {} {}{}{}\r",
+				 " ".repeat(LABEL_WIDTH - 8),
+
+				 Colored::Fg(Color::White),
+				 Colored::Bg(Color::Red),
+				 Attribute::Reset,
+
+				 Colored::Fg(Color::Red),
+				 "Above directories will be permanently deleted",
+				 Attribute::Reset,
+		);
 	}
 
 	/// Asks the user if he wants to continue and actually delete files
@@ -100,7 +112,7 @@ impl OutputManager {
 	}
 
 	pub fn analyse_filter_by_modified_skip(&self) {
-		self.println("Skip", Color::Yellow, "--all flag set, skipping analysis");
+		self.println("Skip", Color::Yellow, "--all flag set, ignoring last used time");
 	}
 
 	pub fn analyse_filter_by_modified_path(&self, path : &Path) {
