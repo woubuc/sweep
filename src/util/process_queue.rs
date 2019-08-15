@@ -15,11 +15,9 @@ const TIMEOUT_MS_BETWEEN_TRIES: u64 = 50;
 
 /// Process a queue on multiple threads
 ///
-/// This function creates more threads than there are CPU cores, because
-/// it's meant to be used for IO-heavy operations or other tasks that
-/// have a similarly high wait time. When running functions that use
-/// a lot of CPU power, the threads will get in each other's way and
-/// performance will be less than optimal.
+/// This function may create more threads than there are CPU cores, because
+/// it's meant to be used for IO-heavy operations or other tasks that have a
+/// similarly high wait time.
 ///
 /// # Arguments
 /// `num_threads` - The number of threads to spawn
