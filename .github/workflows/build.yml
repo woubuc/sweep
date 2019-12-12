@@ -1,0 +1,38 @@
+name: Build
+
+on: [create]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install targets
+        run: |
+          apt-get update
+          apt-get -y install gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
+          rustup target add x86_64-pc-windows-gnu
+          rustup target add i686-pc-windows-gnu
+          rustup target add x86_64-unknown-linux-gnu
+
+      - name: Build Win64
+        run: |
+          cargo rustc --release --target=x86_64-pc-windows-gnu -- -C linker=x86_64-w64-mingw32-gcc
+          zip -Tj dist/project-cleanup-win64.zip target/x86_64-pc-windows-gnu/release/project-cleanup.exe
+
+      - name: Build Win32
+        run: |
+          cargo rustc --release --target=i686-pc-windows-gnu -- -C linker=i686-w64-mingw32-gcc -C link-args=-mwindows -C panic=abort
+          zip -Tj dist/project-cleanup-win32.zip target/i686-pc-windows-gnu/release/project-cleanup.exe
+
+      - name: Build Linux
+        run: |
+          cargo rustc --release --target=x86_64-unknown-linux-gnu
+          zip -Tj dist/project-cleanup-linux.zip target/x86_64-unknown-linux-gnu/release/project-cleanup
+
+      - name: Upload builds
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: dist
+          path: dist
