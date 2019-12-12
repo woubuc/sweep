@@ -8,6 +8,7 @@ use crate::discover_projects::discover_projects;
 use crate::settings::{ Settings, SettingsError };
 use crate::project::Project;
 
+mod cleanuprc;
 mod output;
 mod project;
 mod settings;

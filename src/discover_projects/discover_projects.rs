@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::path::{ Path, PathBuf };
+use std::sync::atomic::{ AtomicUsize, Ordering };
 use std::cmp;
 
 use crossbeam::queue::SegQueue;

@@ -1,6 +1,6 @@
 use std::cmp::max;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::path::{ Path, PathBuf };
+use std::sync::atomic::{ AtomicUsize, Ordering };
 
 use crossbeam::queue::SegQueue;
 use yansi::Color;

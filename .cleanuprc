@@ -1,0 +1,26 @@
+# This is an example .cleanuprc file. It lists the directories that should be
+# deleted. Each line should contain one path, relative to the directory that
+# the .cleanuprc file is in, followed by a newline character (enter).
+
+# Blank lines and lines starting with '#' are ignored. This makes the
+# .cleanuprc file compatible with .gitignore files for syntax
+# highlighting purposes. However, .cleanuprc does NOT support regex
+# or wildcard syntax, and only works with directories.
+
+
+# If a .cleanuprc file is found, none of the default paths will match
+# and only the contents of the .cleanuprc file will count.
+target/
+
+# Paths should NOT start with a leading slash, but may end with a
+# trailing slash.
+target
+
+
+# If a listed path does not exist in the directory, it is ignored.
+this-directory-does-not-exist/
+
+
+# Nested paths will only delete the last directory. The below line
+# would delete the `bar` directory, but leave `foo` intact.
+foo/bar/

@@ -33,8 +33,18 @@ Run the application with `project-cleanup --help` to see the options.
 
 These languages are based on my own experience and use patterns.
 
-### Adding more languages
-Add the necessary checks in
+### Custom rules
+Create a file named `.cleanuprc` in the root directory of a project,
+and list all paths that should be deleted when running project cleanup.
+
+See the [.cleanuprc](./.cleanuprc) file in this repository for an example.
+
+**Note**: If a `.cleanuprc` file is found, the default directories will be
+skipped entirely, so you will need to add them to your `.cleanuprc` if you
+still want to clean them.
+
+### Adding more defaults
+Contributions are welcome! Add the necessary checks in
 [src/discover_projects/detect_cleanable_project.rs](https://github.com/woubuc/project-cleanup/blob/master/src/discover_projects/detect_cleanable_project.rs)
 and submit a pull request to add more built-in languages, or to add
 more unnecessary directories to existing languages.

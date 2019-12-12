@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::path::{ Path, PathBuf };
+
+use crate::output;
+use crate::cleanuprc::parse_cleanuprc;
 
 /// Describes a discovered cleanable project
 #[derive(Debug)]
@@ -40,6 +43,21 @@ impl Project {
 
 		if path.exists() && path.is_dir() && !self.dependency_dirs.contains(&path) {
 			self.dependency_dirs.push(path);
+		}
+	}
+
+	pub fn load_cleanuprc(&mut self) {
+		let paths = match parse_cleanuprc(&self.root) {
+			Ok(paths) => paths,
+			Err(e) => {
+				output::error(format!("Could not read .cleanuprc file in {}", self.root.to_str().unwrap_or("")));
+				output::println_info(e.to_string());
+				std::process::exit(1);
+			}
+		};
+
+		for path in paths {
+			self.add_cleanable_dir_if_exists(path);
 		}
 	}
 

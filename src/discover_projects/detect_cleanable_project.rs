@@ -25,6 +25,13 @@ pub fn detect_cleanable_project(path : &Path) -> Option<Project> {
 	let mut is_project = false;
 
 
+	if exists_in_path(path, ".cleanuprc") {
+		project.load_cleanuprc();
+
+		// If a .cleanuprc file is found, it should override the default paths so we can return early
+		return Some(project);
+	}
+
 	// Rust projects
 	if exists_in_path(path, "Cargo.toml") {
 		is_project = true;
