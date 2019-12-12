@@ -28,13 +28,13 @@ impl Project {
 
 	pub fn root(&self) -> &Path { &self.root }
 
-	/// Marks a subdirectory of this project's root directory as a dependency,
+	/// Marks a subdirectory of this project's root directory as cleanable,
 	/// if that directory exists. If the subdirectory doesn't exist, nothing
 	/// happens.
 	///
 	/// # Arguments
 	/// `subdir` - Name of the subdirectory inside the project root directory
-	pub fn try_add_dependency_dir<P : Into<PathBuf>>(&mut self, subdir : P) {
+	pub fn add_cleanable_dir_if_exists<P : Into<PathBuf>>(&mut self, subdir : P) {
 		let mut path = self.root.clone();
 		path.push(subdir.into());
 
@@ -43,14 +43,14 @@ impl Project {
 		}
 	}
 
-	/// Checks if the given path is listed as a dependency directory of this
+	/// Checks if the given path is listed as a cleanable directory of this
 	/// project
-	pub fn is_dependency_dir<P : Into<PathBuf>>(&self, path : P) -> bool {
-		return self.dependency_dirs.contains(&path.into());
+	pub fn is_cleanable_dir<P : Into<PathBuf>>(&self, path : P) -> bool {
+		self.dependency_dirs.contains(&path.into())
 	}
 
 	/// Consumes the project and returns the dependency directories
-	pub fn into_dependency_dirs(self) -> Vec<PathBuf> {
+	pub fn into_cleanable_dirs(self) -> Vec<PathBuf> {
 		self.dependency_dirs
 	}
 }

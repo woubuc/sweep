@@ -1,16 +1,16 @@
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::cmp;
 
 use crossbeam::queue::SegQueue;
+use yansi::Color;
 
 use crate::output;
 use crate::Project;
 use crate::Settings;
-use crate::util::process_queue;
+use crate::utils::process_queue;
 
-use super::identify::identify_cleanable_project;
-use super::ignore::is_ignored;
-use std::cmp::max;
+use super::detect_cleanable_project::detect_cleanable_project;
 
 /// Recursively walks the configured paths and discovers all cleanable directories
 ///
@@ -22,7 +22,7 @@ use std::cmp::max;
 ///
 /// # Returns
 /// A queue containing all discovered projects
-pub fn discover(settings : &Settings) -> SegQueue<Project> {
+pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
 
 	// Will contain a queue of paths that still need to be processed
 	let path_queue = SegQueue::new();
@@ -42,54 +42,66 @@ pub fn discover(settings : &Settings) -> SegQueue<Project> {
 	// paths queued for all threads to start working immediately, the work
 	// will finish faster and there will be less risk of threads timing out
 	// before all paths have been processed.
-	//
-	// If there was only one level to crawl, the queue will be empty after this
-	// and the thread creation can be skipped entirely, improving performance
-	// even more.
 	for path in &settings.paths {
-		if let Some(project) = identify_cleanable_project(&path) {
+		if let Some(project) = detect_cleanable_project(&path) {
 			discovered.push(project);
 		} else {
-			discover_in_directory(&path, &settings, &path_queue, &discovered);
+			discover_projects_in_directory(&path, &settings, &path_queue, &discovered);
 		}
 	}
 
-	if path_queue.len() == 0 {
-		output().discover_searching_done(total_paths.into_inner(), discovered.len());
-		return discovered;
+	// If there was only one level to crawl, the queue will be empty after this
+	// and the thread creation can be skipped entirely
+	if path_queue.len() > 0 {
+
+		// I've set the number of threads to twice the number of CPU cores but
+		// this is not based on any real insights. It is an assumption of what
+		// might be a good balance between read speed, disk usage and CPU usage.
+		// Real-world tests and experience may give different results and the
+		// number of threads may need to be adjusted later on.
+		let thread_count = cmp::max(8, num_cpus::get() * 2);
+
+		process_queue(
+			thread_count,
+			&path_queue,
+			|path| {
+				output::print("Searching", Color::Cyan, path.to_str().unwrap_or(""));
+
+				total_paths.fetch_add(1, Ordering::SeqCst);
+				discover_projects_in_directory(&path, &settings, &path_queue, &discovered);
+			},
+			|tries| {
+				output::print("Searching", Color::Cyan, &".".repeat(tries));
+			},
+		);
 	}
 
-	// I've set the number of threads to spawn to twice the number of CPU
-	// cores available, but this is not based on any real insights, rather
-	// this is an assumption of what might be a good balance between read
-	// speed, disk usage and CPU usage. Real-world tests and experience may
-	// give different results and the number of threads may need to be
-	// adjusted later on.
-	process_queue(
-		max(8, num_cpus::get() * 2),
-		&path_queue,
-		|path| {
-			output().discover_searching_path(&path);
-			total_paths.fetch_add(1, Ordering::SeqCst);
+	let total_paths = total_paths.into_inner();
+	let message = if total_paths == 1 {
+		format!("1 directory searched")
+	} else {
+		format!("{} directories searched", total_paths)
+	};
+	output::println("Searched", Color::Green, &message);
 
-			discover_in_directory(&path, &settings, &path_queue, &discovered);
-		},
-		|tries| output().discover_searching_retry(tries)
-	);
-
-	output().discover_searching_done(total_paths.into_inner(), discovered.len());
-	return discovered;
+	if discovered.len() == 0 {
+		None
+	} else {
+		Some(discovered)
+	}
 }
 
 
 /// Discovers the subdirectories of a given path
+///
+/// This function is called by the worker threads created in `discover_projects()`
 ///
 /// # Arguments
 /// `path`       - Path to search
 /// `settings`   - The application settings object
 /// `path_queue` - Subdirectories that need to be discovered will be added to this queue
 /// `discovered` - Identified cleanable projects will be added to this queue
-fn discover_in_directory(path : &Path, settings : &Settings, path_queue : &SegQueue<PathBuf>, discovered : &SegQueue<Project>) {
+fn discover_projects_in_directory(path : &Path, settings : &Settings, path_queue : &SegQueue<PathBuf>, discovered : &SegQueue<Project>) {
 
 	// We can only read in directories
 	if !path.is_dir() {
@@ -98,7 +110,8 @@ fn discover_in_directory(path : &Path, settings : &Settings, path_queue : &SegQu
 
 	let read_dir = match path.read_dir() {
 		Err(e) => {
-			output().discover_searching_error(&e.to_string(), &path);
+			output::error(e.to_string());
+			output::println_info(path.to_str().unwrap_or(""));
 			return;
 		},
 
@@ -106,12 +119,12 @@ fn discover_in_directory(path : &Path, settings : &Settings, path_queue : &SegQu
 			.filter_map(|entry| entry.ok())
 			.map(|entry| entry.path())
 			.filter(|path| path.is_dir())
-			.filter(|path| !is_ignored(&settings.ignore, path))
+			.filter(|path| !settings.is_path_ignored(path))
 	};
 
 	// Go over all subdirectories in the given directory and check if they're cleanable
 	for path in read_dir {
-		if let Some(project) = identify_cleanable_project(&path) {
+		if let Some(project) = detect_cleanable_project(&path) {
 			discovered.push(project);
 		} else {
 			path_queue.push(path);

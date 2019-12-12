@@ -76,3 +76,40 @@ pub fn process_queue<F1, F2, T>(num_threads : usize, queue: &SegQueue<T>, on_ent
 		}
 	}).expect("Threading error"); // TODO add better error handling
 }
+
+
+
+#[cfg(test)]
+mod test {
+	use std::sync::atomic::{ AtomicUsize, Ordering };
+	use crossbeam::queue::SegQueue;
+
+	use super::process_queue;
+
+	#[test]
+	fn count_items() {
+		let queue : SegQueue<usize> = SegQueue::new();
+		for i in 1..20 {
+			queue.push(i);
+		}
+
+		let total = AtomicUsize::new(0);
+
+		process_queue(
+			4,
+			&queue,
+			|i| {
+				total.fetch_add(i, Ordering::SeqCst);
+			},
+			|_| (),
+		);
+
+		let total = total.into_inner();
+
+		// We don't need to test the inner workings of `process_queue()`
+		// since the heavy lifting is handled by the `crossbeam` crate.
+		// So the only thing we should check is if the entire queue has
+		// been processed.
+		assert_eq!(total, 190);
+	}
+}

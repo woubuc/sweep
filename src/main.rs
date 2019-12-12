@@ -1,108 +1,125 @@
 use std::fs::remove_dir_all;
-use std::io::stdin;
-use std::path::PathBuf;
+use std::io::{ stdin, stdout, Write };
 
-use dunce::canonicalize;
-use regex::Regex;
-use structopt::StructOpt;
+use yansi::{ Paint, Color };
 
-pub use crate::output::output;
-pub use crate::project::Project;
-
-mod analyse;
-mod find;
-mod util;
+use crate::analyse_projects::analyse_projects;
+use crate::discover_projects::discover_projects;
+use crate::settings::{ Settings, SettingsError };
+use crate::project::Project;
 
 mod output;
 mod project;
+mod settings;
 
-/// Clean up build artifacts and dependency directories in Rust, Java and NodeJS projects to free up disk space.
-///
-/// Questions, bugs & other issues: github.com/woubuc/project-cleanup/issues
-#[derive(Debug,StructOpt)]
-pub struct Settings {
-	/// One or more directories where the project-cleanup should start searching for projects.
-	/// Defaults to the current working directory if no paths are given.
-	#[structopt(name = "PATH...")]
-	pub paths : Vec<PathBuf>,
-
-	/// Cleanup even projects that were modified within the last 30 days.
-	#[structopt(short = "a", long = "all")]
-	pub all : bool,
-
-	/// Exclude projects in directories matched by this regex pattern
-	#[structopt(short = "i", long = "ignore")]
-	pub ignore : Option<Regex>,
-
-	/// Skip confirmation prompt before removing directories
-	#[structopt(short = "f", long = "force")]
-	pub force : bool,
-}
-
-impl Settings {
-	pub fn get() -> Settings {
-		// Explicit declaration because type hinting in IDEA doesn't know `from_args`
-		let mut settings : Settings = Settings::from_args();
-
-		if settings.paths.is_empty(){
-			settings.paths.push(".".into());
-		}
-
-		// Resolve to absolute paths
-		settings.paths = settings.paths.iter()
-								 .map(|p| canonicalize(p).expect("Cannot resolve to absolute path")) // TODO improve error handling
-								 .collect();
-
-		for path in &settings.paths {
-			output().settings_path(&path);
-		}
-
-		return settings;
-	}
-}
+mod analyse_projects;
+mod discover_projects;
+mod utils;
 
 fn main() {
-	output().main_title();
+	if cfg!(windows) && !Paint::enable_windows_ascii() {
+		Paint::disable();
+	}
 
-	let settings = Settings::get();
+	println!("{} v{}", Paint::new("Project Cleanup").bold(), Paint::new(env!("CARGO_PKG_VERSION")).dimmed());
+
+	let settings = match Settings::get() {
+		Ok(settings) => settings,
+		Err(err) => {
+			match err {
+				SettingsError::InvalidPath(path) => output::error(format!("Invalid path: {}", path.to_str().unwrap_or(""))),
+			};
+
+			return;
+		}
+	};
+
+	for path in &settings.paths {
+		output::println("Path", Color::Blue, path.to_str().unwrap_or(""));
+	}
 
 	// Discover cleanable projects
-	let cleanables = find::discover(&settings);
+	let cleanables = match discover_projects(&settings) {
+		Some(cleanables) => cleanables,
+		None => {
+			output::println_plain(Some(Color::Yellow), "No cleanable projects found");
+			output::println_plain(None, "  Check your paths and try again.");
+			output::println_plain(None, "  See `--help` for more options");
+			return;
+		},
+	};
 
-	if cleanables.len() == 0 {
-		output().main_no_cleanable_projects();
-		return;
-	}
+	output::println_info(format!("{} cleanable projects found", cleanables.len()));
+
 
 	// Figure out which directories can be deleted
-	let delete_dirs = analyse::analyse(cleanables, &settings);
+	let delete_dirs = analyse_projects(cleanables, &settings);
 
 	if delete_dirs.len() == 0 {
-		output().main_no_deletable_directories();
+		output::println_plain(Some(Color::Yellow), "No cleanable projects found");
+		output::println_plain(None, "  This is likely because your projects were recently modified");
+		output::println_plain(None, "  Run the application with `--all` to disregard file age");
+		output::println_plain(None, "  See `--help` for more options");
 		return;
 	}
 
-	output().main_directories_list(&delete_dirs);
+
+	let message = if delete_dirs.len() == 1 {
+		format!("Found 1 directory that can be deleted:")
+	} else {
+		format!("Found {} directories that can be deleted:", delete_dirs.len())
+	};
+
+	output::println("Result", Color::Green, &message);
+	for dir in &delete_dirs {
+		output::println_info(dir.to_str().unwrap_or(""));
+	}
+
+
 	if !settings.force {
-		output().main_delete();
+		println!(
+			"{}{} {}",
+			" ".repeat(output::LABEL_WIDTH - 8),
+			Paint::white(" DANGER ").bold().bg(Color::Red),
+			Paint::red("Above directories will be permanently deleted").bold()
+		);
 
 		loop {
-			output().main_delete_question();
+			print!(
+				"{} {} (y/n): ",
+				" ".repeat(output::LABEL_WIDTH),
+				Paint::new("Continue?").bold()
+			);
+			stdout().flush().unwrap();
 
 			let mut input = String::new();
-			stdin().read_line(&mut input).unwrap();
+			stdin().read_line(&mut input).expect("Could not read CLI input");
 			let input = input.trim();
 
-			if input == "n" { return; }
-			if input == "y" { break; }
-			output().main_delete_invalid_answer();
+			if input == "n" {
+				return;
+			}
+
+			if input == "y" {
+				break;
+			}
+
+			output::println_info("Please answer either 'y' or 'n'");
 		}
 	}
 
 	for dir in delete_dirs {
-		output().delete_path(&dir);
-		remove_dir_all(dir).expect("Could not remove directory"); // TODO better error handling
+		output::print("Deleting", Color::Cyan, dir.to_str().unwrap_or(""));
+		match remove_dir_all(&dir) {
+			Err(error) => {
+				println!();
+				output::error(format!("Could not delete directory {}", &dir.to_str().unwrap_or("")));
+				output::println_info(error.to_string());
+				return;
+			},
+			_ => (),
+		}
 	}
 
-	output().delete_complete();
+	output::println("Deleted", Color::Green, "All directories deleted");
 }
