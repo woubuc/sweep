@@ -3,6 +3,8 @@
 [![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
 [![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
 [![License](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
+|
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/woubuc/project-cleanup/Tests?label=tests)
 
 This little tool will recursively browse a directory to find code
 projects in several languages. If the project hasn't been touched for
@@ -34,7 +36,7 @@ These languages are based on my own experience and use patterns.
 
 ### Adding more languages
 Add the necessary checks in
-[src/discover_projects/is_cleanable_project.rs](https://github.com/woubuc/project-cleanup/blob/master/src/discover_projects/is_cleanable_project.rs)
+[src/discover_projects/detect_cleanable_project.rs](https://github.com/woubuc/project-cleanup/blob/master/src/discover_projects/detect_cleanable_project.rs)
 and submit a pull request to add more built-in languages, or to add
 more unnecessary directories to existing languages.
 
