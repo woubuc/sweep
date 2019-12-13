@@ -13,6 +13,8 @@ license = "MIT"
 keywords = ["cleanup", "project", "clean", "delete", "free"]
 categories = ["command-line-utilities"]
 
+exclude = ["docs/*", "logo/*", ".github/*"]
+
 [dependencies]
 crossbeam = "0.7.3"
 dunce = "1.0.0"
