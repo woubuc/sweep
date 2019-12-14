@@ -1,6 +1,6 @@
 {
   "name": "project-cleanup",
-  "version": "0.7.0-rc4",
+  "version": "0.7.0-rc5",
   "description": "Reduce the disk usage of your projects by removing dependencies & builds",
   "repository": "https://github.com/woubuc/project-cleanup.git",
   "author": "woubuc <wouter@epicteddy.com>",
