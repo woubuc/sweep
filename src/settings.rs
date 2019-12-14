@@ -12,7 +12,11 @@ pub enum SettingsError {
 pub type Result<T> = std::result::Result<T, SettingsError>;
 
 
-/// The main application settings struct
+/// Deletes unnecessary build artifacts and dependency directories in your projects.
+///
+/// Detects Rust, Java and NodeJS projects by default, or define your own cleanable directories by adding a `.cleanuprc` file to your project directory.
+///
+/// Questions, bugs & other issues: https://github.com/woubuc/project-cleanup/issues
 #[derive(Debug,StructOpt)]
 pub struct Settings {
 	/// One or more directories where the project-cleanup should start searching for projects.
