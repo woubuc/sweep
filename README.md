@@ -18,10 +18,30 @@ drive right now.
 ![Screenshot](readme_screenshot.png)
 
 ## Install
+There are several ways to install project cleanup
+
+#### Install via npm
+Useful if you want to install this along with your Node project's dev-dependencies and invoke it from a script.
+
+```
+npm install --global project-cleanup
+```
+
+The npm package will automatically download the relevant binary from Github.
+
+#### Manual download
 Download the binary for your platform from the
 [releases page](https://github.com/woubuc/project-cleanup/releases)
 
-Or install via Cargo: `cargo install project-cleanup`
+#### Build with Cargo
+The Rust way. This compiles the application from the sources published to crates.io.
+
+```
+cargo install project-cleanup
+```
+
+#### Other
+If you have a favourite package manager, feel free to [create an issue](https://github.com/woubuc/project-cleanup/issues) to discuss how we can publish project cleanup to your package manager.
 
 ## How it works
 Run the application with `project-cleanup --help` to see the options.
