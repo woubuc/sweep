@@ -12,75 +12,75 @@ use crate::Project;
 /// # Returns
 /// The identified project, or None if the given path is not a project
 pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
-    // A project can only be a directory
-    if !path.is_dir() {
-        return None;
-    }
+	// A project can only be a directory
+	if !path.is_dir() {
+		return None;
+	}
 
-    // Create an empty project so we can add cleanable directories to it
-    let mut project = Project::new(path.clone());
+	// Create an empty project so we can add cleanable directories to it
+	let mut project = Project::new(path.clone());
 
-    // This flag will keep track of whether we've found a project
-    let mut is_project = false;
+	// This flag will keep track of whether we've found a project
+	let mut is_project = false;
 
-    if exists_in_path(path, ".cleanuprc") {
-        project.load_cleanuprc();
+	if exists_in_path(path, ".cleanuprc") {
+		project.load_cleanuprc();
 
-        // If a .cleanuprc file is found, it should override the default paths so we can return early
-        return Some(project);
-    }
+		// If a .cleanuprc file is found, it should override the default paths so we can return early
+		return Some(project);
+	}
 
-    // Rust projects
-    if exists_in_path(path, "Cargo.toml") {
-        is_project = true;
-        project.add_cleanable_dir_if_exists("target");
-    }
+	// Rust projects
+	if exists_in_path(path, "Cargo.toml") {
+		is_project = true;
+		project.add_cleanable_dir_if_exists("target");
+	}
 
-    // Node.js projects
-    if exists_in_path(path, "package.json") {
-        is_project = true;
-        project.add_cleanable_dir_if_exists("node_modules");
-        project.add_cleanable_dir_if_exists(".cache");
-    }
+	// Node.js projects
+	if exists_in_path(path, "package.json") {
+		is_project = true;
+		project.add_cleanable_dir_if_exists("node_modules");
+		project.add_cleanable_dir_if_exists(".cache");
+	}
 
-    // Java projects
-    if exists_in_path(path, "pom.xml") {
-        is_project = true;
-        project.add_cleanable_dir_if_exists(".gradle");
-        project.add_cleanable_dir_if_exists("build");
-    }
+	// Java projects
+	if exists_in_path(path, "pom.xml") {
+		is_project = true;
+		project.add_cleanable_dir_if_exists(".gradle");
+		project.add_cleanable_dir_if_exists("build");
+	}
 
-    if is_project {
-        return Some(project);
-    } else {
-        return None;
-    }
+	if is_project {
+		return Some(project);
+	} else {
+		return None;
+	}
 }
 
 #[cfg(test)]
 mod test {
-    use super::detect_cleanable_project;
-    use crate::utils::test_utils;
+	use super::detect_cleanable_project;
+	use crate::utils::test_utils;
 
-    /// Creates the provided files and directories in a temporary directory,
-    /// then runs `detect_cleanable_project` on that directory and verifies
-    /// that all cleanable directories have been identified.
-    ///
-    /// # Example
-    /// ```rs
-    /// test_project!(
-    ///   files: ["Cargo.toml"], // The 'cargo.toml' file will be created
-    ///   dirs: ["src", "target"], // The 'src' and 'target' directories will be created
-    ///   cleanable: ["target"], // The 'target' directory should be identified as cleanable
-    /// );
-    ///
-    /// // No cleanable directories
-    /// test_project!(
-    ///   files: ["Cargo.toml"],
-    ///   dirs: ["src"]
-    /// );
-    /// ```
-    macro_rules! test_project {
+	/// Creates the provided files and directories in a temporary directory,
+	/// then runs `detect_cleanable_project` on that directory and verifies
+	/// that all cleanable directories have been identified.
+	///
+	/// # Example
+	/// ```rs
+	/// test_project!(
+	///   files: ["Cargo.toml"], // The 'cargo.toml' file will be created
+	///   dirs: ["src", "target"], // The 'src' and 'target' directories will be created
+	///   cleanable: ["target"], // The 'target' directory should be identified as cleanable
+	/// );
+	///
+	/// // No cleanable directories
+	/// test_project!(
+	///   files: ["Cargo.toml"],
+	///   dirs: ["src"]
+	/// );
+	/// ```
+	macro_rules! test_project {
 		(files: [$($f:expr),*], dirs: [$($d:expr),*]) => {
 			test_project!(files: [$($f),*], dirs: [$($d),*], cleanable: []);
 		};
@@ -103,75 +103,75 @@ mod test {
 		};
 	}
 
-    #[test]
-    fn rust() {
-        test_project!(
-            files: ["Cargo.toml"],
-            dirs: ["src"]
-        );
+	#[test]
+	fn rust() {
+		test_project!(
+			files: ["Cargo.toml"],
+			dirs: ["src"]
+		);
 
-        test_project!(
-            files: ["Cargo.toml"],
-            dirs: ["src", "target"],
-            cleanable: ["target"]
-        );
-    }
+		test_project!(
+			files: ["Cargo.toml"],
+			dirs: ["src", "target"],
+			cleanable: ["target"]
+		);
+	}
 
-    #[test]
-    fn nodejs() {
-        test_project!(
-            files: ["package.json"],
-            dirs: ["src"]
-        );
+	#[test]
+	fn nodejs() {
+		test_project!(
+			files: ["package.json"],
+			dirs: ["src"]
+		);
 
-        test_project!(
-            files: ["package.json"],
-            dirs: ["src", "node_modules", ".cache", ".idea"],
-            cleanable: ["node_modules", ".cache"]
-        );
-    }
+		test_project!(
+			files: ["package.json"],
+			dirs: ["src", "node_modules", ".cache", ".idea"],
+			cleanable: ["node_modules", ".cache"]
+		);
+	}
 
-    #[test]
-    fn java() {
-        test_project!(
-            files: ["pom.xml"],
-            dirs: ["src"]
-        );
+	#[test]
+	fn java() {
+		test_project!(
+			files: ["pom.xml"],
+			dirs: ["src"]
+		);
 
-        test_project!(
-            files: ["pom.xml"],
-            dirs: ["src", "build"],
-            cleanable: ["build"]
-        );
+		test_project!(
+			files: ["pom.xml"],
+			dirs: ["src", "build"],
+			cleanable: ["build"]
+		);
 
-        test_project!(
-            files: ["pom.xml"],
-            dirs: ["src", ".gradle", "build", "spec"],
-            cleanable: [".gradle", "build"]
-        );
-    }
+		test_project!(
+			files: ["pom.xml"],
+			dirs: ["src", ".gradle", "build", "spec"],
+			cleanable: [".gradle", "build"]
+		);
+	}
 
-    #[test]
-    fn empty_dir() {
-        test_utils::with_temp_dir(|dir| {
-            assert!(
-                detect_cleanable_project(&dir).is_none(),
-                "Project detected in empty directory"
-            );
-        });
-    }
+	#[test]
+	fn empty_dir() {
+		test_utils::with_temp_dir(|dir| {
+			assert!(
+				detect_cleanable_project(&dir).is_none(),
+				"Project detected in empty directory"
+			);
+		});
+	}
 
-    #[test]
-    fn no_project() {
-        test_utils::with_temp_dir(|dir| {
-            test_utils::create_dir(dir, "not_a_project");
-            test_utils::create_dir(dir, "another_test_directory");
-            test_utils::create_file(dir, "no_project_here.txt");
+	#[test]
+	fn no_project() {
+		test_utils::with_temp_dir(|dir| {
+			test_utils::create_dir(dir, "not_a_project");
+			test_utils::create_dir(dir, "another_test_directory");
+			test_utils::create_file(dir, "no_project_here.txt");
 
-            assert!(
-                detect_cleanable_project(&dir).is_none(),
-                "Project detected in unrelated directory"
-            );
-        });
-    }
+			assert!(
+				detect_cleanable_project(&dir).is_none(),
+				"Project detected in unrelated directory"
+			);
+		});
+	}
 }
