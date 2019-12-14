@@ -28,11 +28,11 @@ pub struct Settings {
 	#[structopt(short = "a", long = "all")]
 	pub all : bool,
 
-	/// Exclude projects in directories matched by this regex pattern
+	/// Exclude projects in directories matched by this regex pattern.
 	#[structopt(short = "i", long = "ignore")]
 	pub ignore : Option<Regex>,
 
-	/// Skip confirmation prompt before removing directories
+	/// Skip confirmation prompt before removing directories. Useful in automated scripts.
 	#[structopt(short = "f", long = "force")]
 	pub force : bool,
 }
