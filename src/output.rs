@@ -1,30 +1,28 @@
-use yansi::{ Paint, Color, Style };
-use std::io::{ stdout, Write };
+use std::io::{stdout, Write};
+use yansi::{Color, Paint, Style};
 
-pub const LABEL_WIDTH : usize = 12;
+pub const LABEL_WIDTH: usize = 12;
 
-pub fn error<S : Into<String>>(message : S) {
+pub fn error<S: Into<String>>(message: S) {
 	println("Error", Color::Red, &message.into());
 }
 
-
-pub fn println<S : Into<String>>(label : S, label_colour : Color, message : S) {
+pub fn println<S: Into<String>>(label: S, label_colour: Color, message: S) {
 	print(label, label_colour, message);
 	println!();
 }
 
-pub fn println_info<S : Into<String>>(message : S) {
+pub fn println_info<S: Into<String>>(message: S) {
 	print_info(message);
 	println!();
 }
 
-pub fn println_plain<S : Into<String>>(colour : Option<Color>, message : S) {
+pub fn println_plain<S: Into<String>>(colour: Option<Color>, message: S) {
 	print_plain(colour, message);
 	println!();
 }
 
-
-pub fn print<S : Into<String>>(label : S, label_colour : Color, message : S) {
+pub fn print<S: Into<String>>(label: S, label_colour: Color, message: S) {
 	let term_width = get_term_width();
 	let message = shorten(message.into(), term_width - LABEL_WIDTH - 1);
 	let label = label.into();
@@ -43,7 +41,7 @@ pub fn print<S : Into<String>>(label : S, label_colour : Color, message : S) {
 	stdout().flush().unwrap();
 }
 
-pub fn print_info<S : Into<String>>(message : S) {
+pub fn print_info<S: Into<String>>(message: S) {
 	let term_width = get_term_width();
 	let message = shorten(message.into(), term_width - LABEL_WIDTH - 1);
 
@@ -56,7 +54,7 @@ pub fn print_info<S : Into<String>>(message : S) {
 	stdout().flush().unwrap();
 }
 
-pub fn print_plain<S : Into<String>>(colour : Option<Color>, message : S) {
+pub fn print_plain<S: Into<String>>(colour: Option<Color>, message: S) {
 	let term_width = get_term_width();
 	let message = shorten(message.into(), term_width - LABEL_WIDTH - 1);
 	let message_len = message.len();
@@ -66,11 +64,7 @@ pub fn print_plain<S : Into<String>>(colour : Option<Color>, message : S) {
 		None => Paint::new(message),
 	};
 
-	print!(
-		"{}{}\r",
-		message,
-		" ".repeat(term_width - message_len),
-	);
+	print!("{}{}\r", message, " ".repeat(term_width - message_len),);
 	stdout().flush().unwrap();
 }
 
@@ -78,7 +72,7 @@ pub fn print_plain<S : Into<String>>(colour : Option<Color>, message : S) {
 ///
 /// If the given message is shorter than the available width, the
 /// original message will be returned
-fn shorten(message : String, max_width : usize) -> String {
+fn shorten(message: String, max_width: usize) -> String {
 	let len = message.len();
 
 	if len <= max_width {
@@ -90,8 +84,12 @@ fn shorten(message : String, max_width : usize) -> String {
 	return [
 		message.chars().take(break_index).collect(),
 		"...".to_owned(),
-		message.chars().skip(len - max_width + break_index + 3).collect()
-	].join("");
+		message
+			.chars()
+			.skip(len - max_width + break_index + 3)
+			.collect(),
+	]
+	.join("");
 }
 
 fn get_term_width() -> usize {

@@ -1,23 +1,18 @@
 use std::cmp::max;
-use std::path::{ Path, PathBuf };
-use std::sync::atomic::{ AtomicUsize, Ordering };
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crossbeam::queue::SegQueue;
 use yansi::Color;
 
 use crate::output;
-use crate::Project;
 use crate::utils::file_utils::file_name;
 use crate::utils::process_queue;
+use crate::Project;
 
-const ALWAYS_IGNORE_DIRS : [&'static str; 3] = [
-	".idea",
-	".vscode",
-	".git",
-];
+const ALWAYS_IGNORE_DIRS: [&'static str; 3] = [".idea", ".vscode", ".git"];
 
-pub fn filter_by_modified_date(projects : SegQueue<Project>) -> SegQueue<Project> {
-
+pub fn filter_by_modified_date(projects: SegQueue<Project>) -> SegQueue<Project> {
 	let old_projects = SegQueue::new();
 	let recent_projects = AtomicUsize::new(0);
 
@@ -37,7 +32,7 @@ pub fn filter_by_modified_date(projects : SegQueue<Project>) -> SegQueue<Project
 					output::print("Analysing", Color::Cyan, path.to_str().unwrap_or(""));
 					find_modified_date_of_directory(&project, &path, &paths, &modified);
 				},
-				|_| ()
+				|_| (),
 			);
 
 			let time_since_last_modified = {
@@ -69,18 +64,33 @@ pub fn filter_by_modified_date(projects : SegQueue<Project>) -> SegQueue<Project
 	if recent_project_count == 0 {
 		output::println("Analysed", Color::Green, "All projects can be cleaned");
 	} else if old_project_count == 0 {
-		output::println("Analysed", Color::Green, "All projects have been modified recently");
+		output::println(
+			"Analysed",
+			Color::Green,
+			"All projects have been modified recently",
+		);
 	} else {
-		let message = format!("{} of {} projects can be cleaned", old_project_count, old_project_count + recent_project_count);
+		let message = format!(
+			"{} of {} projects can be cleaned",
+			old_project_count,
+			old_project_count + recent_project_count
+		);
 		output::println("Analysed", Color::Green, &message);
-		output::println_info(format!("{} projects have been modified recently", recent_project_count));
+		output::println_info(format!(
+			"{} projects have been modified recently",
+			recent_project_count
+		));
 	}
 
 	return old_projects;
 }
 
-fn find_modified_date_of_directory(project : &Project, path : &Path, paths : &SegQueue<PathBuf>, modified : &SegQueue<Option<u64>>) {
-
+fn find_modified_date_of_directory(
+	project: &Project,
+	path: &Path,
+	paths: &SegQueue<PathBuf>,
+	modified: &SegQueue<Option<u64>>,
+) {
 	let (dirs, files) = {
 		let mut dirs = Vec::new();
 		let mut files = Vec::new();
@@ -96,12 +106,15 @@ fn find_modified_date_of_directory(project : &Project, path : &Path, paths : &Se
 		(dirs, files)
 	};
 
-	modified.push(files.iter()
-		.filter_map(|p| p.metadata().ok())
-		.filter_map(|d| d.modified().ok())
-		.filter_map(|m| m.elapsed().ok())
-		.map(|e| e.as_secs())
-		.min());
+	modified.push(
+		files
+			.iter()
+			.filter_map(|p| p.metadata().ok())
+			.filter_map(|d| d.modified().ok())
+			.filter_map(|m| m.elapsed().ok())
+			.map(|e| e.as_secs())
+			.min(),
+	);
 
 	for dir in dirs {
 		if ALWAYS_IGNORE_DIRS.contains(&file_name(&dir)) {

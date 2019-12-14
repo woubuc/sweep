@@ -17,10 +17,13 @@ use super::filter_by_modified_date::filter_by_modified_date;
 ///
 /// # Returns
 /// All discovered cleanable directories
-pub fn analyse_projects(projects : SegQueue<Project>, settings : &Settings) -> Vec<PathBuf> {
-
+pub fn analyse_projects(projects: SegQueue<Project>, settings: &Settings) -> Vec<PathBuf> {
 	let filtered = if settings.all {
-		output::println("Skip", Color::Yellow, "--all flag set, ignoring last used time");
+		output::println(
+			"Skip",
+			Color::Yellow,
+			"--all flag set, ignoring last used time",
+		);
 		projects
 	} else {
 		filter_by_modified_date(projects)

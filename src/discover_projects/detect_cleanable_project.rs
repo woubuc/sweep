@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use crate::Project;
 use crate::utils::file_utils::exists_in_path;
+use crate::Project;
 
 /// Checks if a given directory is cleanable and identifies the
 /// dependency subdirectories
@@ -11,8 +11,7 @@ use crate::utils::file_utils::exists_in_path;
 ///
 /// # Returns
 /// The identified project, or None if the given path is not a project
-pub fn detect_cleanable_project(path : &Path) -> Option<Project> {
-
+pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 	// A project can only be a directory
 	if !path.is_dir() {
 		return None;
@@ -23,7 +22,6 @@ pub fn detect_cleanable_project(path : &Path) -> Option<Project> {
 
 	// This flag will keep track of whether we've found a project
 	let mut is_project = false;
-
 
 	if exists_in_path(path, ".cleanuprc") {
 		project.load_cleanuprc();
@@ -38,14 +36,12 @@ pub fn detect_cleanable_project(path : &Path) -> Option<Project> {
 		project.add_cleanable_dir_if_exists("target");
 	}
 
-
 	// Node.js projects
 	if exists_in_path(path, "package.json") {
 		is_project = true;
 		project.add_cleanable_dir_if_exists("node_modules");
 		project.add_cleanable_dir_if_exists(".cache");
 	}
-
 
 	// Java projects
 	if exists_in_path(path, "pom.xml") {
@@ -54,16 +50,12 @@ pub fn detect_cleanable_project(path : &Path) -> Option<Project> {
 		project.add_cleanable_dir_if_exists("build");
 	}
 
-
-
 	if is_project {
 		return Some(project);
 	} else {
 		return None;
 	}
 }
-
-
 
 #[cfg(test)]
 mod test {
@@ -139,7 +131,6 @@ mod test {
 		);
 	}
 
-
 	#[test]
 	fn java() {
 		test_project!(
@@ -163,7 +154,10 @@ mod test {
 	#[test]
 	fn empty_dir() {
 		test_utils::with_temp_dir(|dir| {
-			assert!(detect_cleanable_project(&dir).is_none(), "Project detected in empty directory");
+			assert!(
+				detect_cleanable_project(&dir).is_none(),
+				"Project detected in empty directory"
+			);
 		});
 	}
 
@@ -174,7 +168,10 @@ mod test {
 			test_utils::create_dir(dir, "another_test_directory");
 			test_utils::create_file(dir, "no_project_here.txt");
 
-			assert!(detect_cleanable_project(&dir).is_none(), "Project detected in unrelated directory");
+			assert!(
+				detect_cleanable_project(&dir).is_none(),
+				"Project detected in unrelated directory"
+			);
 		});
 	}
 }

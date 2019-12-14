@@ -9,11 +9,8 @@ use std::path::Path;
 ///
 /// # Returns
 /// True if `filename` exists in `path`
-pub fn exists_in_path(path : &Path, filename : &str) -> bool {
-	path
-		.clone()
-		.join(filename)
-		.exists()
+pub fn exists_in_path(path: &Path, filename: &str) -> bool {
+	path.clone().join(filename).exists()
 }
 
 /// Gets the filename of a path
@@ -24,14 +21,12 @@ pub fn exists_in_path(path : &Path, filename : &str) -> bool {
 /// # Returns
 /// The filename (last part) of the path, or an empty string if
 /// the path could not be retrieved for any reason
-pub fn file_name(path : &Path) -> &str {
-	path
-		.file_name()
+pub fn file_name(path: &Path) -> &str {
+	path.file_name()
 		.unwrap_or_else(|| OsStr::new(""))
 		.to_str()
 		.unwrap_or("")
 }
-
 
 #[cfg(test)]
 mod test {
@@ -79,5 +74,4 @@ mod test {
 			assert_eq!(file_name(&dir.join("test_file.txt")), "test_file.txt");
 		});
 	}
-
 }

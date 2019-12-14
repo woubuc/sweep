@@ -41,9 +41,12 @@ const TIMEOUT_MS_BETWEEN_TRIES: u64 = 50;
 ///     |tries| print!()
 /// );
 /// ```
-pub fn process_queue<F1, F2, T>(num_threads : usize, queue: &SegQueue<T>, on_entry: F1, on_retry: F2)
-	where F1: Sync + Fn(T), F2: Sync + Fn(usize), T: Send {
-
+pub fn process_queue<F1, F2, T>(num_threads: usize, queue: &SegQueue<T>, on_entry: F1, on_retry: F2)
+where
+	F1: Sync + Fn(T),
+	F2: Sync + Fn(usize),
+	T: Send,
+{
 	// No use in spawning all these threads and processing an empty queue
 	if queue.len() == 0 {
 		return;
@@ -74,21 +77,20 @@ pub fn process_queue<F1, F2, T>(num_threads : usize, queue: &SegQueue<T>, on_ent
 				}
 			});
 		}
-	}).expect("Threading error"); // TODO add better error handling
+	})
+	.expect("Threading error"); // TODO add better error handling
 }
-
-
 
 #[cfg(test)]
 mod test {
-	use std::sync::atomic::{ AtomicUsize, Ordering };
 	use crossbeam::queue::SegQueue;
+	use std::sync::atomic::{AtomicUsize, Ordering};
 
 	use super::process_queue;
 
 	#[test]
 	fn count_items() {
-		let queue : SegQueue<usize> = SegQueue::new();
+		let queue: SegQueue<usize> = SegQueue::new();
 		for i in 1..20 {
 			queue.push(i);
 		}

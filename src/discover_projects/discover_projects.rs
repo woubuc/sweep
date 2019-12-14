@@ -1,14 +1,14 @@
-use std::path::{ Path, PathBuf };
-use std::sync::atomic::{ AtomicUsize, Ordering };
 use std::cmp;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crossbeam::queue::SegQueue;
 use yansi::Color;
 
 use crate::output;
+use crate::utils::process_queue;
 use crate::Project;
 use crate::Settings;
-use crate::utils::process_queue;
 
 use super::detect_cleanable_project::detect_cleanable_project;
 
@@ -22,8 +22,7 @@ use super::detect_cleanable_project::detect_cleanable_project;
 ///
 /// # Returns
 /// A queue containing all discovered projects
-pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
-
+pub fn discover_projects(settings: &Settings) -> Option<SegQueue<Project>> {
 	// Will contain a queue of paths that still need to be processed
 	let path_queue = SegQueue::new();
 
@@ -34,7 +33,6 @@ pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
 	// Just for displaying this information in the output, it's
 	// not used for anything else
 	let total_paths = AtomicUsize::new(settings.paths.len());
-
 
 	// Before starting, check if any of the configured paths are cleanable and
 	// discover the first level of subdirectories, to ensure the paths queue
@@ -53,7 +51,6 @@ pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
 	// If there was only one level to crawl, the queue will be empty after this
 	// and the thread creation can be skipped entirely
 	if path_queue.len() > 0 {
-
 		// I've set the number of threads to twice the number of CPU cores but
 		// this is not based on any real insights. It is an assumption of what
 		// might be a good balance between read speed, disk usage and CPU usage.
@@ -91,7 +88,6 @@ pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
 	}
 }
 
-
 /// Discovers the subdirectories of a given path
 ///
 /// This function is called by the worker threads created in `discover_projects()`
@@ -101,8 +97,12 @@ pub fn discover_projects(settings : &Settings) -> Option<SegQueue<Project>> {
 /// `settings`   - The application settings object
 /// `path_queue` - Subdirectories that need to be discovered will be added to this queue
 /// `discovered` - Identified cleanable projects will be added to this queue
-fn discover_projects_in_directory(path : &Path, settings : &Settings, path_queue : &SegQueue<PathBuf>, discovered : &SegQueue<Project>) {
-
+fn discover_projects_in_directory(
+	path: &Path,
+	settings: &Settings,
+	path_queue: &SegQueue<PathBuf>,
+	discovered: &SegQueue<Project>,
+) {
 	// We can only read in directories
 	if !path.is_dir() {
 		return;
@@ -113,13 +113,13 @@ fn discover_projects_in_directory(path : &Path, settings : &Settings, path_queue
 			output::error(e.to_string());
 			output::println_info(path.to_str().unwrap_or(""));
 			return;
-		},
+		}
 
 		Ok(entries) => entries
 			.filter_map(|entry| entry.ok())
 			.map(|entry| entry.path())
 			.filter(|path| path.is_dir())
-			.filter(|path| !settings.is_path_ignored(path))
+			.filter(|path| !settings.is_path_ignored(path)),
 	};
 
 	// Go over all subdirectories in the given directory and check if they're cleanable

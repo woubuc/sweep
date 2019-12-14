@@ -1,19 +1,19 @@
-use std::path::{ Path, PathBuf };
+use std::path::{Path, PathBuf};
 
-use crate::output;
 use crate::cleanuprc::parse_cleanuprc;
+use crate::output;
 
 /// Describes a discovered cleanable project
 #[derive(Debug)]
 pub struct Project {
 	/// The root directory of the project
-	root : PathBuf,
+	root: PathBuf,
 
 	/// Directories containing dependencies
-	dependency_dirs : Vec<PathBuf>,
+	dependency_dirs: Vec<PathBuf>,
 
 	/// Timestamp indicating when the project was last modified
-	last_modified : u64,
+	last_modified: u64,
 }
 
 impl Project {
@@ -21,7 +21,7 @@ impl Project {
 	///
 	/// # Arguments
 	/// `root` - The root directory of the project
-	pub fn new<P : Into<PathBuf>>(root : P) -> Project {
+	pub fn new<P: Into<PathBuf>>(root: P) -> Project {
 		Project {
 			root: root.into(),
 			dependency_dirs: Vec::new(),
@@ -29,7 +29,9 @@ impl Project {
 		}
 	}
 
-	pub fn root(&self) -> &Path { &self.root }
+	pub fn root(&self) -> &Path {
+		&self.root
+	}
 
 	/// Marks a subdirectory of this project's root directory as cleanable,
 	/// if that directory exists. If the subdirectory doesn't exist, nothing
@@ -37,7 +39,7 @@ impl Project {
 	///
 	/// # Arguments
 	/// `subdir` - Name of the subdirectory inside the project root directory
-	pub fn add_cleanable_dir_if_exists<P : Into<PathBuf>>(&mut self, subdir : P) {
+	pub fn add_cleanable_dir_if_exists<P: Into<PathBuf>>(&mut self, subdir: P) {
 		let mut path = self.root.clone();
 		path.push(subdir.into());
 
@@ -50,7 +52,10 @@ impl Project {
 		let paths = match parse_cleanuprc(&self.root) {
 			Ok(paths) => paths,
 			Err(e) => {
-				output::error(format!("Could not read .cleanuprc file in {}", self.root.to_str().unwrap_or("")));
+				output::error(format!(
+					"Could not read .cleanuprc file in {}",
+					self.root.to_str().unwrap_or("")
+				));
 				output::println_info(e.to_string());
 				std::process::exit(1);
 			}
@@ -63,7 +68,7 @@ impl Project {
 
 	/// Checks if the given path is listed as a cleanable directory of this
 	/// project
-	pub fn is_cleanable_dir<P : Into<PathBuf>>(&self, path : P) -> bool {
+	pub fn is_cleanable_dir<P: Into<PathBuf>>(&self, path: P) -> bool {
 		self.dependency_dirs.contains(&path.into())
 	}
 
