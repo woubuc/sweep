@@ -1,0 +1,19 @@
+{
+  "name": "project-cleanup",
+  "version": "0.7.0-rc1",
+  "description": "Reduce the disk usage of your projects by removing dependencies & builds",
+  "repository": "https://github.com/woubuc/project-cleanup.git",
+  "author": "woubuc <wouter@epicteddy.com>",
+  "license": "MIT",
+  "bin": {
+    "project-cleanup": "npm/run.js"
+  },
+  "scripts": {
+    "preinstall": "node npm/scripts.js uninstall",
+    "postinstall": "node npm/scripts.js install"
+  },
+  "dependencies": {
+    "binary-install": "^0.0.0"
+  },
+  "homepage": "https://github.com/woubuc/project-cleanup"
+}

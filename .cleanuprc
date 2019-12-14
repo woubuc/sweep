@@ -10,11 +10,11 @@
 
 # If a .cleanuprc file is found, none of the default paths will match
 # and only the contents of the .cleanuprc file will count.
-target/
+node_modules
 
 # Paths should NOT start with a leading slash, but may end with a
 # trailing slash.
-target
+target/
 
 
 # If a listed path does not exist in the directory, it is ignored.
