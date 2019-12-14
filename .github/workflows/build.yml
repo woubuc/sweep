@@ -46,11 +46,13 @@ jobs:
 
 
     - name: Upload release
-      uses: yakuhzi/action-release@v1
+      uses: softprops/action-gh-release@v1
       with:
-        project-cleanup-win64.tar.gz: dist/project-cleanup-win64.tar.gz
-        project-cleanup-win32.tar.gz: dist/project-cleanup-win32.tar.gz
-        project-cleanup-linux.tar.gz: dist/project-cleanup-linux.tar.gz
+        draft: true
+        files: |
+          dist/project-cleanup-win64.tar.gz
+          dist/project-cleanup-win32.tar.gz
+          dist/project-cleanup-linux.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
