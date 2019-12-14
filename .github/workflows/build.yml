@@ -1,13 +1,17 @@
-name: Build
+name: build
 
-on: [create]
+on:
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v1
 
     - name: Install dependencies
       run: |
@@ -18,6 +22,7 @@ jobs:
         rustup target add x86_64-unknown-linux-gnu
         mkdir dist
         mkdir builds
+
 
     - name: Build Win64
       run: |
@@ -41,8 +46,26 @@ jobs:
         tar -C builds -czvf dist/project-cleanup-linux.tar.gz project-cleanup-linux
 
 
-    - name: Upload binaries
-      uses: actions/upload-artifact@v1.0.0
+    - name: Upload release
+      uses: yakuhzi/action-release@v1
       with:
-        name: project-cleanup-build
-        path: dist
+        project-cleanup-win64.tar.gz: dist/project-cleanup-win64.tar.gz
+        project-cleanup-win32.tar.gz: dist/project-cleanup-win32.tar.gz
+        project-cleanup-linux.tar.gz: dist/project-cleanup-linux.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+    - name: Publish npm package
+      env:
+        NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+      run: |
+        echo "$NPM_ACCESS_TOKEN" > ".npmrc"
+        npm publish
+
+    - name: Publish cargo package
+      env:
+        CARGO_ACCESS_TOKEN: ${{ secrets.CARGO_ACCESS_TOKEN }}
+      run: |
+        cargo login "$CARGO_ACCESS_TOKEN"
+        cargo publish
