@@ -1,7 +1,7 @@
 [package]
 edition = "2018"
 name = "project-cleanup"
-version = "0.7.0-rc5"
+version = "0.7.0-rc6"
 
 description = "CLI tool to clean up and remove old generated code in your Rust, Javascript and Java projects"
 repository = "https://github.com/woubuc/project-cleanup"
