@@ -15,5 +15,6 @@
   "dependencies": {
     "binary-install": "^0.0.0"
   },
-  "homepage": "https://github.com/woubuc/project-cleanup"
+  "homepage": "https://github.com/woubuc/project-cleanup",
+  "files": ["npm/**/*"]
 }
