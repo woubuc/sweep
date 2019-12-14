@@ -1,7 +1,8 @@
 [![Project Cleanup](./readme_logo.png)](https://woubuc.github.io/project-cleanup/)
 
-[![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
+[![npm](https://img.shields.io/npm/v/project-cleanup)](https://www.npmjs.com/package/project-cleanup)
 [![View on Crates.io](https://img.shields.io/crates/v/project-cleanup.svg)](https://crates.io/crates/project-cleanup)
+[![Download](https://img.shields.io/badge/download-latest-informational.svg)](https://github.com/woubuc/project-cleanup/releases/latest)
 [![License](https://img.shields.io/github/license/woubuc/project-cleanup.svg)](https://github.com/woubuc/project-cleanup/blob/master/LICENSE)
 [![Test Status](https://github.com/woubuc/project-cleanup/workflows/tests/badge.svg)](https://github.com/woubuc/project-cleanup/blob/master/.github/workflows/tests.yml)
 
