@@ -48,7 +48,7 @@ jobs:
     - name: Upload release
       uses: softprops/action-gh-release@v1
       with:
-        draft: true
+        body_path: CHANGELOG.md
         files: |
           dist/project-cleanup-win64.tar.gz
           dist/project-cleanup-win32.tar.gz
