@@ -44,10 +44,6 @@ impl Settings {
 
 		settings.validate()?;
 
-//		for path in &settings.paths {
-//			output().settings_path(&path);
-//		}
-
 		Ok(settings)
 	}
 
