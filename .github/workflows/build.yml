@@ -2,6 +2,7 @@ name: build
 
 on:
   push:
+    branches: ['master']
     tags: ['v*.*.*']
 
 jobs:
@@ -18,10 +19,12 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y install gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
+        sudo apt-get -y install gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 libssl-devel lzma-devel libxml2-devel
         rustup target add x86_64-pc-windows-gnu
         rustup target add i686-pc-windows-gnu
         rustup target add x86_64-unknown-linux-gnu
+        rustup target add x86_64-apple-darwin
+
         mkdir dist
         mkdir builds
 
@@ -48,6 +51,35 @@ jobs:
         tar -C builds -czvf dist/project-cleanup-linux.tar.gz project-cleanup-linux
 
 
+
+    - name: Cache Mac OS dependencies
+      id: cache-macos
+      uses: actions/cache@v1
+      with:
+        path: osxcross
+        key: ${{ runner.os }}-osxcross
+
+    - name: Install Mac OS dependencies
+      if: steps.cache-macos.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/tpoechtrager/osxcross
+        cd osxcross
+        wget -nc https://s3.dockerproject.org/darwin/v2/MacOSX10.10.sdk.tar.xz
+        mv MacOSX10.10.sdk.tar.xz tarballs/
+        UNATTENDED=yes OSX_VERSION_MIN=10.7 ./build.sh
+
+    - name: Build Mac OS
+      run: |
+        export PATH="$(pwd)/osxcross/target/bin:$PATH"
+        export LIBZ_SYS_STATIC=1
+        export CC=o64-clang
+        export CXX=o64-clang++
+        cargo build --release --target "x86_64-apple-darwin"
+        mkdir builds/project-cleanup-macos
+        cp target/x86_64-apple-darwin/release/project-cleanup builds/project-cleanup-macos
+        tar -C builds -czvf dist/project-cleanup-macos.tar.gz project-cleanup-macos
+
+
     - name: Upload release
       uses: softprops/action-gh-release@v1
       with:
@@ -56,6 +88,7 @@ jobs:
           dist/project-cleanup-win64.tar.gz
           dist/project-cleanup-win32.tar.gz
           dist/project-cleanup-linux.tar.gz
+          dist/project-cleanup-macos.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
