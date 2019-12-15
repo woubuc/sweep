@@ -10,10 +10,15 @@
   },
   "scripts": {
     "preinstall": "node npm/scripts.js uninstall",
-    "postinstall": "node npm/scripts.js install"
+    "postinstall": "node npm/scripts.js install",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "dependencies": {
     "binary-install": "^0.0.1"
+  },
+  "devDependencies": {
+    "vuepress": "^1.2.0"
   },
   "homepage": "https://github.com/woubuc/project-cleanup",
   "files": [

@@ -4,6 +4,7 @@
 /target
 /builds
 /dist
+/docs/.vuepress/dist
 
 *.rs.bk
 *.iml
