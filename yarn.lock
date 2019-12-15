@@ -15,13 +15,14 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-binary-install@^0.0.0:
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/binary-install/-/binary-install-0.0.0.tgz#ac514abcfb8f7580cf8d7ce961bec7cd75db5722"
-  integrity sha512-YsPhIDQ3r0Ni91AOj27EsWT8b9/6Mr+gJDo3OCKZvgXujHHN3OO3kaSvk4r43OmkYD4+EKL1OJkpHYpepOy/Mw==
+binary-install@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/binary-install/-/binary-install-0.0.1.tgz#bcb08ff8f5adcf9e4b4cb33af89b530f5ae6649b"
+  integrity sha512-axr6lqB4ec/pkEOb/JMnZpfcroWv1zT48pVz1oQHG7XmGkS77vmdxmP1btuH79lWQdy9e2MVw/uW0D8siopkRg==
   dependencies:
     axios "^0.19.0"
     env-paths "^2.2.0"
+    mkdirp "^0.5.1"
     rimraf "^3.0.0"
     tar "^5.0.5"
     universal-url "^2.0.0"
@@ -142,7 +143,7 @@ minizlib@^2.1.0:
     minipass "^3.0.0"
     yallist "^4.0.0"
 
-mkdirp@^0.5.0:
+mkdirp@^0.5.0, mkdirp@^0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
