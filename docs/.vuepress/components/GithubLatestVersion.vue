@@ -4,7 +4,7 @@
 
 <script>
 
-const GH_API_URL = 'https://api.github.com/repos/woubuc/project-cleanup/releases/latest';
+const GH_API_URL = 'https://api.github.com/repos/woubuc/sweep/releases/latest';
 
 export default {
 	name: 'GithubLatestVersion',

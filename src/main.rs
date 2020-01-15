@@ -3,15 +3,13 @@ use std::io::{stdin, stdout, Write};
 
 use yansi::{Color, Paint};
 
-use crate::analyse_projects::analyse_projects;
-use crate::discover_projects::discover_projects;
 use crate::project::Project;
 use crate::settings::{Settings, SettingsError};
 
-mod cleanuprc;
 mod output;
 mod project;
 mod settings;
+mod swpfile;
 
 mod analyse_projects;
 mod discover_projects;
@@ -24,7 +22,7 @@ fn main() {
 
 	println!(
 		"{} v{}",
-		Paint::new("Project Cleanup").bold(),
+		Paint::new("Sweep").bold(),
 		Paint::new(env!("CARGO_PKG_VERSION")).dimmed()
 	);
 
@@ -46,23 +44,23 @@ fn main() {
 	}
 
 	// Discover cleanable projects
-	let cleanables = match discover_projects(&settings) {
+	let cleanables = match discover_projects::discover_projects(&settings) {
 		Some(cleanables) => cleanables,
 		None => {
-			output::println_plain(Some(Color::Yellow), "No cleanable projects found");
+			output::println_plain(Some(Color::Yellow), "No sweepable projects found");
 			output::println_plain(None, "  Check your paths and try again.");
 			output::println_plain(None, "  See `--help` for more options");
 			return;
 		}
 	};
 
-	output::println_info(format!("{} cleanable projects found", cleanables.len()));
+	output::println_info(format!("{} sweepable projects found", cleanables.len()));
 
 	// Figure out which directories can be deleted
-	let delete_dirs = analyse_projects(cleanables, &settings);
+	let delete_dirs = analyse_projects::analyse_projects(cleanables, &settings);
 
 	if delete_dirs.len() == 0 {
-		output::println_plain(Some(Color::Yellow), "No cleanable projects found");
+		output::println_plain(Some(Color::Yellow), "No sweepable projects found");
 		output::println_plain(
 			None,
 			"  This is likely because your projects were recently modified",

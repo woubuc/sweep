@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::cleanuprc::parse_cleanuprc;
+use crate::swpfile::parse_swpfile;
 use crate::output;
 
 /// Describes a discovered cleanable project
@@ -48,12 +48,12 @@ impl Project {
 		}
 	}
 
-	pub fn load_cleanuprc(&mut self) {
-		let paths = match parse_cleanuprc(&self.root) {
+	pub fn load_swpfile(&mut self, filename : &str) {
+		let paths = match parse_swpfile(&self.root, &PathBuf::from(filename)) {
 			Ok(paths) => paths,
 			Err(e) => {
 				output::error(format!(
-					"Could not read .cleanuprc file in {}",
+					"Could not read .swpfile file in {}",
 					self.root.to_str().unwrap_or("")
 				));
 				output::println_info(e.to_string());

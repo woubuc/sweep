@@ -17,12 +17,12 @@ pub type Result<T> = std::result::Result<T, SettingsError>;
 /// Questions, bugs & other issues: https://github.com/woubuc/project-cleanup/issues
 #[derive(Debug, StructOpt)]
 pub struct Settings {
-	/// One or more directories where the project-cleanup should start searching for projects.
+	/// One or more directories where `swp` should start searching for projects.
 	/// Defaults to the current working directory if no paths are given.
 	#[structopt(name = "PATH...")]
 	pub paths: Vec<PathBuf>,
 
-	/// Cleanup even projects that were modified within the last 30 days.
+	/// Sweep even projects that were modified within the last 30 days.
 	#[structopt(short = "a", long = "all")]
 	pub all: bool,
 
@@ -30,7 +30,7 @@ pub struct Settings {
 	#[structopt(short = "i", long = "ignore")]
 	pub ignore: Option<Regex>,
 
-	/// Skip confirmation prompt before removing directories. Useful in automated scripts.
+	/// Skip confirmation prompt before removing directories. Use at your own risk.
 	#[structopt(short = "f", long = "force")]
 	pub force: bool,
 }

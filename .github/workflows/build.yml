@@ -31,23 +31,23 @@ jobs:
     - name: Build Win64
       run: |
         cargo rustc --release --target=x86_64-pc-windows-gnu -- -C linker=x86_64-w64-mingw32-gcc
-        mkdir builds/project-cleanup-win64
-        cp target/x86_64-pc-windows-gnu/release/project-cleanup.exe builds/project-cleanup-win64
-        tar -C builds -czvf dist/project-cleanup-win64.tar.gz project-cleanup-win64
+        mkdir builds/sweep-win64
+        cp target/x86_64-pc-windows-gnu/release/swp.exe builds/sweep-win64
+        tar -C builds -czvf dist/sweep-win64.tar.gz sweep-win64
 
     - name: Build Win32
       run: |
         cargo rustc --release --target=i686-pc-windows-gnu -- -C linker=i686-w64-mingw32-gcc -C link-args=-mwindows -C panic=abort
-        mkdir builds/project-cleanup-win32
-        cp target/i686-pc-windows-gnu/release/project-cleanup.exe builds/project-cleanup-win32
-        tar -C builds -czvf dist/project-cleanup-win32.tar.gz project-cleanup-win32
+        mkdir builds/sweep-win32
+        cp target/i686-pc-windows-gnu/release/swp.exe builds/sweep-win32
+        tar -C builds -czvf dist/sweep-win32.tar.gz sweep-win32
 
     - name: Build Linux
       run: |
         cargo rustc --release --target=x86_64-unknown-linux-gnu
-        mkdir builds/project-cleanup-linux
-        cp target/x86_64-unknown-linux-gnu/release/project-cleanup builds/project-cleanup-linux
-        tar -C builds -czvf dist/project-cleanup-linux.tar.gz project-cleanup-linux
+        mkdir builds/sweep-linux
+        cp target/x86_64-unknown-linux-gnu/release/swp builds/sweep-linux
+        tar -C builds -czvf dist/sweep-linux.tar.gz sweep-linux
 
 
 
@@ -75,9 +75,9 @@ jobs:
         export CC=o64-clang
         export CXX=o64-clang++
         cargo build --release --target "x86_64-apple-darwin"
-        mkdir builds/project-cleanup-macos
-        cp target/x86_64-apple-darwin/release/project-cleanup builds/project-cleanup-macos
-        tar -C builds -czvf dist/project-cleanup-macos.tar.gz project-cleanup-macos
+        mkdir builds/sweep-macos
+        cp target/x86_64-apple-darwin/release/swp builds/sweep-macos
+        tar -C builds -czvf dist/sweep-macos.tar.gz sweep-macos
 
 
     - name: Upload release
@@ -85,10 +85,10 @@ jobs:
       with:
         body_path: CHANGELOG.md
         files: |
-          dist/project-cleanup-win64.tar.gz
-          dist/project-cleanup-win32.tar.gz
-          dist/project-cleanup-linux.tar.gz
-          dist/project-cleanup-macos.tar.gz
+          dist/sweep-win64.tar.gz
+          dist/sweep-win32.tar.gz
+          dist/sweep-linux.tar.gz
+          dist/sweep-macos.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

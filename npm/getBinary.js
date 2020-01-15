@@ -21,14 +21,14 @@ function getPlatform() {
 		return 'macos';
 	}
 
-	throw new Error(`Unsupported platform: ${type} ${arch}. Please create an issue at https://github.com/woubuc/project-cleanup/issues`);
+	throw new Error(`Unsupported platform: ${type} ${arch}. Please create an issue at https://github.com/woubuc/sweep/issues`);
 }
 
 function getBinary() {
 	const platform = getPlatform();
 	const version = require('../package.json').version;
-	const url = `https://github.com/woubuc/project-cleanup/releases/download/v${ version }/project-cleanup-${ platform }.tar.gz`;
-	return new Binary(url, { name: 'project-cleanup' });
+	const url = `https://github.com/woubuc/sweep/releases/download/v${ version }/sweep-${ platform }.tar.gz`;
+	return new Binary(url, { name: 'swp' });
 }
 
 module.exports = getBinary;

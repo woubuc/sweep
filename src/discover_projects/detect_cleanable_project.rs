@@ -23,11 +23,13 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 	// This flag will keep track of whether we've found a project
 	let mut is_project = false;
 
-	if exists_in_path(path, ".cleanuprc") {
-		project.load_cleanuprc();
+	for filename in [".swpfile", ".cleanuprc"].iter() {
+		if exists_in_path(path, filename) {
+			project.load_swpfile(filename);
 
-		// If a .cleanuprc file is found, it should override the default paths so we can return early
-		return Some(project);
+			// If a .swpfile file is found, it overrides the default paths so we can return early
+			return Some(project);
+		}
 	}
 
 	// Rust projects

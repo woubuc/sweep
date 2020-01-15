@@ -1,16 +1,16 @@
 module.exports = {
-	title: 'Project Cleanup',
+	title: 'Sweep',
 	description: 'Reduce the disk usage of your projects by removing dependencies & builds',
 
 	themeConfig: {
-		repo: 'woubuc/project-cleanup',
+		repo: 'woubuc/sweep',
 		docsDir: 'docs',
 		editLinks: true,
 		editLinkText: 'Help improve this page',
 
 		sidebar: {
 			'/': [
-				['', 'Project Cleanup'],
+				['', 'Sweep'],
 				'installation',
 				'usage',
 				'configuration',

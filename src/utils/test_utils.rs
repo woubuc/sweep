@@ -4,7 +4,7 @@ use std::path::Path;
 use tempdir::TempDir;
 
 pub fn with_temp_dir<F: FnOnce(&Path)>(action: F) {
-	let temp_dir = TempDir::new("project_cleanup_test").expect("Could not create temp directory");
+	let temp_dir = TempDir::new("swp_test").expect("Could not create temp directory");
 
 	action(temp_dir.path());
 

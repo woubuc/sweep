@@ -3,10 +3,10 @@ This project welcomes contributions of any kind, whether you want to add new fea
 
 
 ## Better defaults
-The main thing still missing from Project Cleanup is more and better [default detection rules](/#discovering-projects). Pull requests to add more rules (or refine the existing ones) are always welcome.
+The main thing still missing from Sweep is more and better [default detection rules](/#discovering-projects). Pull requests to add more rules (or refine the existing ones) are always welcome.
 
 ### How to add rules
-1. Open the file [src/discover_projects/detect_cleanable_project.rs](https://github.com/woubuc/project-cleanup/blob/master/src/discover_projects/detect_cleanable_project.rs)
+1. Open the file [src/discover_projects/detect_cleanable_project.rs](https://github.com/woubuc/sweep/blob/master/src/discover_projects/detect_cleanable_project.rs)
 2. Add your checks to the main `detect_cleanable_project` function
 3. Add the necessary tests to the test at the bottom of the file
 
@@ -17,7 +17,7 @@ You'll need some basic knowledge of [Rust](https://www.rust-lang.org/), but you 
 This is a relatively standard process for most open source projects. I'll repeat it here for clarity's sake, and to help new contributors get started. In case of questions, create an issue or [reach out on Twitter](https://twitter.com/woubuc).
 
 ### 1. Create an issue
-It all starts by [creating an issue](https://github.com/woubuc/project-cleanup/issues) in the Project Cleanup repository. Use this to describe and discuss the changes you intend to make.
+It all starts by [creating an issue](https://github.com/woubuc/sweep/issues) in the Sweep repository. Use this to describe and discuss the changes you intend to make.
 
 You can also use issues for questions or general feedback, although this may be changed as we get more issues.
 
