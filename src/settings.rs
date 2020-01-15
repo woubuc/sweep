@@ -14,7 +14,7 @@ pub type Result<T> = std::result::Result<T, SettingsError>;
 ///
 /// Detects Rust, Java and NodeJS projects by default, or define your own cleanable directories by adding a `.cleanuprc` file to your project directory.
 ///
-/// Questions, bugs & other issues: https://github.com/woubuc/project-cleanup/issues
+/// Questions, bugs & other issues: https://github.com/woubuc/sweep/issues
 #[derive(Debug, StructOpt)]
 pub struct Settings {
 	/// One or more directories where `swp` should start searching for projects.
