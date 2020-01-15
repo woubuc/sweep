@@ -7,7 +7,7 @@
   "homepage": "https://sweep.woubuc.be",
   "license": "MIT",
   "bin": {
-    "project-cleanup": "npm/run.js"
+    "swp": "npm/run.js"
   },
   "scripts": {
     "preinstall": "node npm/scripts.js uninstall",
