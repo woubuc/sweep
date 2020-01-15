@@ -319,7 +319,7 @@ dependencies = [
 
 [[package]]
 name = "swp"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "crossbeam 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "dunce 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",

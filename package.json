@@ -1,6 +1,6 @@
 {
   "name": "swp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Reduce the disk usage of your projects by removing dependencies & builds",
   "author": "woubuc <wouter@epicteddy.com>",
   "repository": "https://github.com/woubuc/swp.git",
