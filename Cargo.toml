@@ -1,7 +1,7 @@
 [package]
 edition = "2018"
 name = "swp"
-version = "0.7.5"
+version = "1.0.0"
 
 description = "CLI tool to clean up and remove old generated code in your Rust, Javascript and Java projects"
 repository = "https://github.com/woubuc/sweep"
