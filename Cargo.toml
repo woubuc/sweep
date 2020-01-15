@@ -10,7 +10,7 @@ authors = ["Wouter Buckens <wouter@epicteddy.com> (www.woubuc.be)"]
 readme = "README.md"
 license = "MIT"
 
-keywords = ["cleanup", "sweep", "swp", "project", "clean", "delete", "free", "cli"]
+keywords = ["cleanup", "sweep", "clean", "delete", "free"]
 categories = ["command-line-utilities"]
 
 include = ["src/**/*"]
