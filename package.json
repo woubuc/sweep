@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "description": "Reduce the disk usage of your projects by removing dependencies & builds",
   "author": "woubuc <wouter@epicteddy.com>",
-  "repository": "https://github.com/woubuc/swp.git",
+  "repository": "https://github.com/woubuc/sweep.git",
   "homepage": "https://sweep.woubuc.be",
   "license": "MIT",
   "bin": {

@@ -1,2 +1,2 @@
 ## Fixes
-🐛 Fixed some issues in cargo.toml & package.json related to renaming the project
+🐛 Fixed an incorrect setting in package.json
