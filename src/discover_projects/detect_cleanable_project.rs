@@ -48,6 +48,7 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 	// Java projects
 	if exists_in_path(path, "pom.xml") {
 		is_project = true;
+		project.add_cleanable_dir_if_exists("target");
 		project.add_cleanable_dir_if_exists(".gradle");
 		project.add_cleanable_dir_if_exists("build");
 	}
