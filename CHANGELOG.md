@@ -1,2 +1,2 @@
-## Fixes
-🐛 Fixed an incorrect setting in package.json
+## Improvements
+⚡ Added support for cleanable `target` directory in Maven (Java) projects
