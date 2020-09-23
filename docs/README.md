@@ -42,7 +42,7 @@ swp ./dev
 See [usage](/usage.md) for more options
 
 ## Discovering projects
-At this time, the list of built-in discovery rules is relatively short. It will recognise basic Node.js, Rust and Java projects, but nothing beyond that. If you have more sofisticated needs, you can use a [.swpfile](./configuration.md).
+At this time, the list of built-in discovery rules is relatively short. It will recognise basic Node.js, Rust and Java projects, but nothing beyond that. If you have more sophisticated needs, you can use a [.swpfile](./configuration.md).
 
 ### Built-in rules
 - Node.js (will remove the `node_modules` and `.cache` directories)
