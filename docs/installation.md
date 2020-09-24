@@ -9,14 +9,14 @@ Install the package globally with npm or yarn.
 npm install --global swp
 ```
 
-This will download the Javascript installer from npm, which will download the relevant pre-compiled binary from the corresponding release on Github.
+This will download the JavaScript installer from npm, which will download the relevant pre-compiled binary from the corresponding release on GitHub.
 
 You can also install the npm package locally, if you want to keep Sweep in your project's `devDependencies` and invoke it from a script.
 
 [`swp` on npm](https://www.npmjs.com/package/swp)
 
 ## Download manually
-Download the binary for your platform from the [latest release<GithubLatestVersion />](https://github.com/woubuc/sweep/releases/latest) on Github.
+Download the binary for your platform from the [latest release<GithubLatestVersion />](https://github.com/woubuc/sweep/releases/latest) on GitHub.
 
 ## Install via cargo
 The Rust Way&#8482;. Install using Cargo.
