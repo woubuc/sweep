@@ -131,8 +131,8 @@ mod test {
 
 		test_project!(
 			files: ["package.json"],
-			dirs: ["src", "node_modules", ".cache", ".idea"],
-			cleanable: ["node_modules", ".cache"]
+			dirs: ["src", "node_modules", ".cache", ".idea", "build", "dist"],
+			cleanable: ["node_modules", ".cache", "build", "dist"]
 		);
 	}
 
