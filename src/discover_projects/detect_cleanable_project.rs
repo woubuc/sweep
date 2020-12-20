@@ -43,6 +43,8 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 		is_project = true;
 		project.add_cleanable_dir_if_exists("node_modules");
 		project.add_cleanable_dir_if_exists(".cache");
+		project.add_cleanable_dir_if_exists("build");
+		project.add_cleanable_dir_if_exists("dist");
 	}
 
 	// Java projects
