@@ -45,6 +45,11 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 		project.add_cleanable_dir_if_exists(".cache");
 		project.add_cleanable_dir_if_exists("build");
 		project.add_cleanable_dir_if_exists("dist");
+		project.add_cleanable_dir_if_exists("android/app/build");
+		project.add_cleanable_dir_if_exists("android/build");
+		project.add_cleanable_dir_if_exists("android/.gradle");
+		project.add_cleanable_dir_if_exists("ios/build");
+		project.add_cleanable_dir_if_exists("ios/Pods");
 	}
 
 	// Java projects
