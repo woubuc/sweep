@@ -18,7 +18,7 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 	}
 
 	// Create an empty project so we can add cleanable directories to it
-	let mut project = Project::new(path.clone());
+	let mut project = Project::new(path);
 
 	// This flag will keep track of whether we've found a project
 	let mut is_project = false;
@@ -59,6 +59,17 @@ pub fn detect_cleanable_project(path: &Path) -> Option<Project> {
 		project.add_cleanable_dir_if_exists(".gradle");
 		project.add_cleanable_dir_if_exists("build");
 	}
+
+	// Python projects
+	if exists_in_path(path, "__pycache__") {
+		is_project = true;
+		project.add_cleanable_dir_if_exists("__pycache__");
+	}
+	if exists_in_path(path, "site-packages") {
+		is_project = true;
+		project.add_cleanable_dir_if_exists("site-packages");
+	}
+
 
 	if is_project {
 		return Some(project);
@@ -158,6 +169,21 @@ mod test {
 			files: ["pom.xml"],
 			dirs: ["src", ".gradle", "build", "spec"],
 			cleanable: [".gradle", "build"]
+		);
+	}
+
+	#[test]
+	fn python() {
+		test_project!(
+			files: ["some_file"],
+			dirs: ["site-packages", "other"],
+			cleanable: ["site-packages"]
+		);
+
+		test_project!(
+			files: ["some_file"],
+			dirs: ["__pycache__", "other"],
+			cleanable: ["__pycache__"]
 		);
 	}
 
